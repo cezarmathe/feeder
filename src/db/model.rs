@@ -3,7 +3,7 @@ use std::vec::Vec;
 
 pub struct Feed {
     title: String,
-    description: OptionString,
+    description: Option<String>,
     link: String,
 
     category: Option<String>,
