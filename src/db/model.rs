@@ -5,7 +5,7 @@ pub struct Feed {
     title: String,
     description: OptionString,
     link: String,
-    
+
     category: Option<String>,
     copyright: Option<String>,
     image: Option<FeedImage>,
