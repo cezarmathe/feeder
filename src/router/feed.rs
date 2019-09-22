@@ -1,28 +1,31 @@
 use crate::db::model;
+
+use std::vec::Vec;
+
 use rocket_contrib::json::Json;
 
-#[get("/feeds/<uuid>")]
-pub fn get_feed(uuid: String) -> Json(model::Feed) {
+#[get("/feeds/<uuid>?with_items&<with_items>")]
+pub fn get_feed(uuid: String, with_items: Option<bool>) -> Json<model::Feed> {
     unimplemented!();
 }
 
-#[get("/feeds")]
-pub fn get_feeds() {
+#[get("/feeds?with_items&<with_items>")]
+pub fn get_feeds(with_items: Option<bool>) -> Json<Vec<model::Feed>> {
     unimplemented!();
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum(uuid: String) {
+pub fn get_feed_checksum(uuid: String) -> String {
     unimplemented!();
 }
 
-#[post("/feeds", data=<feed>)]
-pub fn create_feed(feed: model::Feed) {
+#[post("/feeds", format = "application/json", data = "<feed>")]
+pub fn create_feed(feed: Json<model::Feed>) -> Json<model::Feed> {
     unimplemented!();
 }
 
-#[put("/feeds/<uuid>", data=<feed>)]
-pub fn update_feed(uuid: String, feed: model::Feed) {
+#[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]
+pub fn update_feed(uuid: String, feed: Json<model::Feed>) -> Json<model::Feed> {
     unimplemented!();
 }
 
