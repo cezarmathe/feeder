@@ -3,7 +3,7 @@ mod feed_items;
 
 pub fn start() {
     rocket::ignite()
-        .mount("/watch",
+        .mount("/",
                routes![
                    feed::get_feed,
                    feed::get_feeds,
