@@ -43,7 +43,7 @@ impl Feed {
         };
 
         // if the checksum fails to compute, do not proceed creating the feed
-        if feed.compute_checksum() {
+        if !feed.compute_checksum() {
             return Option::None;
         }
 
@@ -52,7 +52,7 @@ impl Feed {
         let _uuid = Uuid::new_v3(&Uuid::NAMESPACE_OID, checksum.as_bytes());
 
         // recompute the checksum because the object now has an uuid
-        if feed.compute_checksum() {
+        if !feed.compute_checksum() {
             return Option::None;
         }
 
