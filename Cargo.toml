@@ -19,10 +19,14 @@ md5 = "0.6.1"
 
 # db
 mongodb = "0.3.11"
+bson = "0.14.0"
 
 # logging
 simple-logging = "2.0.2"
 log = "0.4.8"
+
+#lazy statics
+lazy_static = "1.4.0"
 
 [dependencies.rocket_contrib]
 version = "*"
