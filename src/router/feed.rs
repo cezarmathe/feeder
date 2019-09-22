@@ -1,5 +1,5 @@
 #[get("/feeds/<uuid>")]
-pub fn get_feed() {
+pub fn get_feed(uuid: String) {
     unimplemented!();
 }
 
@@ -9,7 +9,7 @@ pub fn get_feeds() {
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum() {
+pub fn get_feed_checksum(uuid: String) {
     unimplemented!();
 }
 
@@ -19,11 +19,11 @@ pub fn create_feed() {
 }
 
 #[put("/feeds/<uuid>")]
-pub fn update_feed() {
+pub fn update_feed(uuid: String) {
     unimplemented!();
 }
 
 #[delete("/feeds/<uuid>")]
-pub fn delete_feed() {
+pub fn delete_feed(uuid: String) {
     unimplemented!();
 }

@@ -1,24 +1,24 @@
 #[get("/feeds/<feed_uuid>/items/<item_uuid>")]
-fn get_feed_item() {
+pub fn get_feed_item(feed_uuid: String, item_uuid: String) {
     unimplemented!();
 }
 
 #[get("/feeds/<feed_uuid>/items")]
-fn get_feed_items() {
+pub fn get_feed_items(feed_uuid: String) {
     unimplemented!();
 }
 
 #[post("/feeds/<feed_uuid>/items")]
-fn create_feed_item() {
+pub fn create_feed_item(feed_uuid: String) {
     unimplemented!();
 }
 
 #[put("/feeds/<feed_uuid>/items/<item_uuid>")]
-fn update_feed_item() {
+pub fn update_feed_item(feed_uuid: String, item_uuid: String) {
     unimplemented!();
 }
 
 #[delete("/feeds/<feed_uuid>/items/<item_uuid>")]
-fn delete_feed_item() {
+pub fn delete_feed_item(feed_uuid: String, item_uuid: String) {
     unimplemented!();
 }
