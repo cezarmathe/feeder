@@ -42,16 +42,10 @@ impl Feed {
             md5_checksum: Option::None,
         };
 
-        // if the checksum fails to compute, do not proceed creating the feed
-        if !feed.compute_checksum() {
-            return Option::None;
-        }
+        // generate the uuid
+        feed.uuid = Option::Some(Uuid::new_v4());
 
-        // extract the checksum and use it to generate an uuid
-        let checksum = feed.md5_checksum.as_ref().unwrap();
-        let _uuid = Uuid::new_v3(&Uuid::NAMESPACE_OID, checksum.as_bytes());
-
-        // recompute the checksum because the object now has an uuid
+        // compute the checksum
         if !feed.compute_checksum() {
             return Option::None;
         }
