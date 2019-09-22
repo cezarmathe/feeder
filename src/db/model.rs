@@ -23,7 +23,12 @@ pub struct Feed {
 
 impl Feed {
     /// Create a new feed.
-    pub fn new(title: String, description: String, link: String) -> Option<Feed> {
+    pub fn new(_title: &str, _description: &str, _link: &str) -> Option<Feed> {
+
+        let title = String::from(_title);
+        let description = String::from(_description);
+        let link = String::from(_link);
+
         let mut feed = Feed{
             uuid: Option::None,
             title,
@@ -52,6 +57,14 @@ impl Feed {
         }
 
         return Option::Some(feed);
+    }
+
+    pub fn get_uuid(&self) -> Option<&Uuid> {
+        return self.uuid.as_ref();
+    }
+
+    pub fn get_checksum(&self) -> Option<&String> {
+        return self.md5_checksum.as_ref();
     }
 
     /// Compute the checksum of this feed.
@@ -111,4 +124,25 @@ pub struct FeedItemEnclosure {
     url: String,
     length: String,
     _type: String,
+}
+
+#[cfg(test)]
+mod test {
+    use super::Feed;
+
+    #[test]
+    fn feed_new_test() {
+        let _feed =
+            Feed::new("My title",
+                      "My example description for my feed test",
+                      "https://example.com");
+        if _feed.is_none() {
+            panic!("Failed to create feed");
+        }
+
+        let feed = _feed.unwrap();
+
+        println!("uuid: {}", feed.uuid.unwrap());
+        println!("checksum: {}", feed.md5_checksum.unwrap());
+    }
 }
