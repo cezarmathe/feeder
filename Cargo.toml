@@ -7,3 +7,24 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+#rocket api framework
+rocket = "0.4.2"
+
+# json, objects and data
+serde = "1.0.99"
+serde_json = "1.0.40"
+serde_derive = "1.0.99"
+uuid = { version = "0.7", features = ["serde", "v3", "v4"] }
+md5 = "0.6.1"
+
+# db
+mongodb = "0.3.11"
+
+# logging
+simple-logging = "2.0.2"
+log = "0.4.8"
+
+[dependencies.rocket_contrib]
+version = "*"
+default-features = false
+features = ["json"]
