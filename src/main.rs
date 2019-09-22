@@ -6,12 +6,14 @@
 extern crate mongodb;
 
 mod db;
+mod router;
 
 use std::env;
 
 use log::{debug, info, error};
 use mongodb::Client;
 use mongodb::ThreadedClient;
+use mongodb::db::ThreadedDatabase;
 
 lazy_static! {
     static ref LOG_FILE: &'static str = {
@@ -38,7 +40,7 @@ lazy_static! {
         0
     };
     static ref DB_HOST: String = {
-        debug!("initializing database host");
+        debug!("retrieving database host");
         match env::var("DB_HOST") {
             Ok(_value) => {
                 debug!("database host is: {}", _value);
@@ -51,7 +53,7 @@ lazy_static! {
         }
     };
     static ref DB_PORT: u16 = {
-        debug!("initializing database port");
+        debug!("retrieving database port");
         let _port: String = env::var("DB_PORT").unwrap_or(String::from("27017"));
         match _port.parse::<u16>() {
             Ok(_value) => {
@@ -80,6 +82,11 @@ lazy_static! {
 
 fn main() {
     *_LOG_BYTE;
-    DB_CLIENT.db("feeder");
     debug!("started main");
+
+    DB_CLIENT.db("feeder").collection("feeds");
+    DB_CLIENT.db("feeder").collection("feed_items");
+
+    debug!("starting router");
+    router::start();
 }
