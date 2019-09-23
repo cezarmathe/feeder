@@ -4,7 +4,7 @@ use std::vec::Vec;
 
 use crypto::digest::Digest;
 use crypto::sha3::Sha3;
-use log::{debug, warn, error};
+use log::{debug, error, warn};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -21,19 +21,22 @@ pub struct Feed {
 
     items_uuid: Vec<Uuid>,
 
-    checksum: Option<String>
+    checksum: Option<String>,
 }
 
 impl Feed {
     /// Create a new feed.
     pub fn new(_title: &str, _description: &str, _link: &str) -> Option<Self> {
-        debug!("creating a new feed struct with args: {:?}, {:?}, {:?}", _title, _description, _link);
+        debug!(
+            "creating a new feed struct with args: {:?}, {:?}, {:?}",
+            _title, _description, _link
+        );
 
         let title = String::from(_title);
         let description = String::from(_description);
         let link = String::from(_link);
 
-        let mut feed = Feed{
+        let mut feed = Feed {
             uuid: Option::None,
             title,
             description,
@@ -101,7 +104,7 @@ impl Feed {
 pub struct FeedImage {
     url: String,
     title: String,
-    link: String
+    link: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -115,12 +118,10 @@ pub struct FeedItem {
     comments: Option<String>,
     enclosure: Option<FeedItemEnclosure>,
 
-    checksum: Option<String>
+    checksum: Option<String>,
 }
 
-impl FeedItem {
-
-}
+impl FeedItem {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FeedItemEnclosure {
@@ -137,10 +138,11 @@ mod test {
     fn feed_new_test() {
         *crate::LOG;
 
-        let _feed =
-            Feed::new("My title",
-                      "My example description for my feed test",
-                      "https://example.com");
+        let _feed = Feed::new(
+            "My title",
+            "My example description for my feed test",
+            "https://example.com",
+        );
         if _feed.is_none() {
             panic!("Failed to create feed");
         }

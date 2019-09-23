@@ -19,12 +19,20 @@ pub fn get_feed_checksum(uuid: String) -> String {
     unimplemented!();
 }
 
-#[post("/feeds", format = "application/json", data = "<feed>")]
+#[post(
+    "/feeds",
+    format = "application/json",
+    data = "<feed>"
+)]
 pub fn create_feed(feed: Json<model::Feed>) -> Json<model::Feed> {
     unimplemented!();
 }
 
-#[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]
+#[put(
+    "/feeds/<uuid>",
+    format = "application/json",
+    data = "<feed>"
+)]
 pub fn update_feed(uuid: String, feed: Json<model::Feed>) -> Json<model::Feed> {
     unimplemented!();
 }

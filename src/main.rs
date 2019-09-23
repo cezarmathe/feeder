@@ -1,38 +1,48 @@
 #![feature(proc_macro_hygiene, decl_macro)]
-#[macro_use] extern crate rocket;
-#[macro_use] extern crate rocket_contrib;
-#[macro_use] extern crate serde_derive;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate mongodb;
+#[macro_use]
+extern crate rocket;
+#[macro_use]
+extern crate rocket_contrib;
+#[macro_use]
+extern crate serde_derive;
+
+use std::env;
+
+use log::{debug, error, info};
+use mongodb::db::ThreadedDatabase;
+use mongodb::Client;
+use mongodb::ThreadedClient;
 
 mod db;
 mod router;
 
-use std::env;
-
-use log::{debug, info, error};
-use mongodb::Client;
-use mongodb::ThreadedClient;
-use mongodb::db::ThreadedDatabase;
-
 lazy_static! {
     static ref _LOG_FILE: &'static str = {
-        match env::var("LOG_FILE").unwrap_or(String::from("STDOUT")).as_str() {
-                "FILE" => "feeder.log",
-                "STDERR" => "/dev/stderr",
-                "DEVNULL" => "/dev/null",
-                _ => "/dev/stdout"
+        match env::var("LOG_FILE")
+            .unwrap_or(String::from("STDOUT"))
+            .as_str()
+        {
+            "FILE" => "feeder.log",
+            "STDERR" => "/dev/stderr",
+            "DEVNULL" => "/dev/null",
+            _ => "/dev/stdout",
         }
     };
     static ref _LOG_LEVEL_FILTER: log::LevelFilter = {
-        match env::var("LOG_LEVEL").unwrap_or(String::from("INFO")).as_str() {
+        match env::var("LOG_LEVEL")
+            .unwrap_or(String::from("INFO"))
+            .as_str()
+        {
             "TRACE" => log::LevelFilter::Trace,
             "DEBUG" => log::LevelFilter::Debug,
             "INFO" => log::LevelFilter::Info,
             "WARN" => log::LevelFilter::Warn,
             "ERROR" => log::LevelFilter::Error,
             "OFF" => log::LevelFilter::Off,
-            _ => log::LevelFilter::Info
+            _ => log::LevelFilter::Info,
         }
     };
     static ref LOG: u8 = {
@@ -45,9 +55,12 @@ lazy_static! {
             Ok(_value) => {
                 debug!("database host is: {}", _value);
                 _value
-            },
+            }
             Err(e) => {
-                error!("Failed to get the database host from the environment variable DB_HOST: {:?}", e);
+                error!(
+                    "Failed to get the database host from the environment variable DB_HOST: {:?}",
+                    e
+                );
                 panic!();
             }
         }
@@ -59,9 +72,12 @@ lazy_static! {
             Ok(_value) => {
                 debug!("database port is: {}", _value);
                 _value
-            },
+            }
             Err(e) => {
-                error!("Failed to get the database port from the environment variable DB_PORT: {:?}", e);
+                error!(
+                    "Failed to get the database port from the environment variable DB_PORT: {:?}",
+                    e
+                );
                 panic!();
             }
         }
@@ -69,9 +85,12 @@ lazy_static! {
     pub static ref DB_CLIENT: Client = {
         match Client::connect(&*_DB_HOST, *_DB_PORT) {
             Ok(_db_client) => {
-                info!("Initialized database with hostname {} and port {}", *_DB_HOST, *_DB_PORT);
+                info!(
+                    "Initialized database with hostname {} and port {}",
+                    *_DB_HOST, *_DB_PORT
+                );
                 _db_client
-            },
+            }
             Err(e) => {
                 error!("Failed to initialize database: {:?}", e);
                 panic!();
