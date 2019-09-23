@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::option::Option;
 use std::str;
 use std::vec::Vec;
@@ -62,6 +63,18 @@ impl Feed {
 
         debug!("successfully created feed: {:?}", feed);
         return Option::Some(feed);
+    }
+
+    pub fn to_json(&self) -> Option<String> {
+        match serde_json::to_string(self) {
+            Ok(_result) => {
+                Option::Some(_result)
+            },
+            Err(e) => {
+                warn!("failed to convert feed {:?} to json: {:?}", self, e);
+                Option::None
+            }
+        }
     }
 
     pub fn get_uuid(&self) -> Option<&Uuid> {

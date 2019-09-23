@@ -1,7 +1,13 @@
 use crate::db::model;
 
+use std::option::Option;
 use std::vec::Vec;
 
+use log::{debug, warn};
+use mongodb::bson;
+use mongodb::Client;
+use mongodb::db::ThreadedDatabase;
+use mongodb::ThreadedClient;
 use rocket_contrib::json::Json;
 
 #[get("/feeds/<uuid>?with_items&<with_items>")]
@@ -25,7 +31,29 @@ pub fn get_feed_checksum(uuid: String) -> String {
     data = "<feed>"
 )]
 pub fn create_feed(feed: Json<model::Feed>) -> Json<model::Feed> {
-    unimplemented!();
+    let client = crate::DB_CLIENT.__private_field;
+    let feed_collection = client.db("feeder").collection("feeds");
+    debug!("retrieved feed collection from the database");
+
+    let json_string: String;
+
+    match feed.to_json() {
+        Some(_value) => json_string = _value,
+        None => {
+            warn!("failed to complete requested due to json failure");
+            return feed;
+        }
+    }
+
+    match feed_collection.insert_one(bson!(json_string)) {
+        Ok(_result) => {
+            debug!("result: {:?}", _result);
+        },
+        Err(e) => {
+            warn!("failed to insert feed: {:?}", e)
+        }
+    }
+    return feed;
 }
 
 #[put(
