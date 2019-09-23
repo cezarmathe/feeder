@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::option::Option;
 use std::str;
 use std::vec::Vec;
@@ -6,6 +5,7 @@ use std::vec::Vec;
 use crypto::digest::Digest;
 use crypto::sha3::Sha3;
 use log::{debug, error, warn};
+use mongodb::Document;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -75,6 +75,23 @@ impl Feed {
                 Option::None
             }
         }
+    }
+
+    pub fn to_document(&self) -> Option<Document> {
+        let mut document = Document::new();
+
+        document.insert("uuid", self.uuid.clone());
+        document.insert("title", self.title.clone());
+        document.insert("description", self.description.clone());
+        document.insert("link", self.link.clone());
+        document.insert("category", self.category.clone());
+        document.insert("copyright", self.copyright.clone());
+        document.insert("image", self.image.clone());
+        document.insert("language", self.language.clone());
+        document.insert("items_uuid", self.items_uuid.clone());
+        document.insert("checksum", self.checksum.clone());
+
+        return Option::Some(document);
     }
 
     pub fn get_uuid(&self) -> Option<&Uuid> {
