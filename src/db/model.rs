@@ -2,6 +2,9 @@ use std::option::Option;
 use std::str;
 use std::vec::Vec;
 
+use crypto::digest::Digest;
+use crypto::sha3::Sha3;
+use log::{debug, warn, error};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -18,12 +21,13 @@ pub struct Feed {
 
     items_uuid: Vec<Uuid>,
 
-    md5_checksum: Option<String>
+    checksum: Option<String>
 }
 
 impl Feed {
     /// Create a new feed.
-    pub fn new(_title: &str, _description: &str, _link: &str) -> Option<Feed> {
+    pub fn new(_title: &str, _description: &str, _link: &str) -> Option<Self> {
+        debug!("creating a new feed struct with args: {:?}, {:?}, {:?}", _title, _description, _link);
 
         let title = String::from(_title);
         let description = String::from(_description);
@@ -39,17 +43,21 @@ impl Feed {
             image: Option::None,
             language: Option::None,
             items_uuid: Vec::new(),
-            md5_checksum: Option::None,
+            checksum: Option::None,
         };
 
         // generate the uuid
+        debug!("generating uuid");
         feed.uuid = Option::Some(Uuid::new_v4());
+        debug!("generated {}", feed.uuid.unwrap());
 
         // compute the checksum
         if !feed.compute_checksum() {
+            error!("checksum not computed, returning Option::None");
             return Option::None;
         }
 
+        debug!("successfully created feed: {:?}", feed);
         return Option::Some(feed);
     }
 
@@ -58,25 +66,26 @@ impl Feed {
     }
 
     pub fn get_checksum(&self) -> Option<&String> {
-        return self.md5_checksum.as_ref();
+        return self.checksum.as_ref();
     }
 
     /// Compute the checksum of this feed.
     /// The checksum is saved inside the object.
     fn compute_checksum(&mut self) -> bool {
+        debug!("computing checksum for feed {:?}", self);
         let json_result = serde_json::to_string(self);
 
         match json_result {
             Ok(json) => {
-                let digest = md5::compute(json.as_bytes());
-                let checksum_result = str::from_utf8(digest.as_ref());
-                if checksum_result.is_err() {
-                    return false;
-                }
-                self.md5_checksum = Some(String::from(checksum_result.unwrap()));
+                debug!("successfully converted feed to json: {}", json);
+                let mut hasher = Sha3::sha3_256();
+                hasher.input_str(json.as_str());
+                self.checksum = Some(String::from(hasher.result_str()));
+                debug!("successfully computed the checksum");
                 return true;
             }
-            Err(_) => {
+            Err(e) => {
+                warn!("could not convert feed {:?} to json", self);
                 return false;
             }
         }
@@ -106,7 +115,7 @@ pub struct FeedItem {
     comments: Option<String>,
     enclosure: Option<FeedItemEnclosure>,
 
-    md5_checksum: Option<String>
+    checksum: Option<String>
 }
 
 impl FeedItem {
@@ -126,6 +135,8 @@ mod test {
 
     #[test]
     fn feed_new_test() {
+        *crate::LOG;
+
         let _feed =
             Feed::new("My title",
                       "My example description for my feed test",
@@ -137,6 +148,6 @@ mod test {
         let feed = _feed.unwrap();
 
         println!("uuid: {}", feed.uuid.unwrap());
-        println!("checksum: {}", feed.md5_checksum.unwrap());
+        println!("checksum: {}", feed.checksum.unwrap());
     }
 }
