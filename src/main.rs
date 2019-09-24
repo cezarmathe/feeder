@@ -6,8 +6,11 @@ extern crate mongodb;
 extern crate rocket;
 #[macro_use]
 extern crate rocket_contrib;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use(Model)]
+extern crate wither_derive;
 
 use std::env;
 

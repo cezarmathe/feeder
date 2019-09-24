@@ -19,6 +19,8 @@ rust-crypto = "0.2.36"
 
 # db
 mongodb = "0.3.11"
+wither = "0.8.0"
+wither_derive = "0.8.0"
 bson = "0.14.0"
 
 # logging

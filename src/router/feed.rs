@@ -4,11 +4,12 @@ use std::option::Option;
 use std::vec::Vec;
 
 use log::{debug, warn};
-use mongodb::db::ThreadedDatabase;
-use mongodb::Document;
-use mongodb::ThreadedClient;
+use mongodb::{
+    db::ThreadedDatabase,
+    ThreadedClient
+};
 use rocket_contrib::json::Json;
-use serde::Serializer;
+use wither::prelude::*;
 
 #[get("/feeds/<uuid>?with_items&<with_items>")]
 pub fn get_feed(uuid: String, with_items: Option<bool>) -> Json<model::Feed> {
@@ -32,17 +33,11 @@ pub fn get_feed_checksum(uuid: String) -> String {
 )]
 pub fn create_feed(feed: Json<model::Feed>) -> Json<model::Feed> {
     let client = &crate::DB_CLIENT;
-    let feed_collection = client.db("feeder").collection("feeds");
+    let db = client.db("feeder");
     debug!("retrieved feed collection from the database");
 
-    match feed_collection.insert_one(feed.to_document().unwrap(), Option::None) {
-        Ok(_result) => {
-            debug!("result: {:?}", _result);
-        },
-        Err(e) => {
-            warn!("failed to insert feed: {:?}", e)
-        }
-    }
+//    feed.save(db.clone(), Option::None);
+
     return feed;
 }
 

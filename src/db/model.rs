@@ -5,23 +5,33 @@ use std::vec::Vec;
 use crypto::digest::Digest;
 use crypto::sha3::Sha3;
 use log::{debug, error, warn};
-use mongodb::Document;
+use mongodb::{
+    coll::options::IndexModel,
+    oid::ObjectId
+};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct Feed {
-    uuid: Option<Uuid>,
+    #[serde(rename="_id", skip_serializing_if="Option::is_none")]
+    id: Option<ObjectId>,
+    uuid: Uuid,
     title: String,
     description: String,
     link: String,
 
+    #[serde(skip_serializing_if="Option::is_none")]
     pub category: Option<String>,
+    #[serde(skip_serializing_if="Option::is_none")]
     pub copyright: Option<String>,
+    #[serde(skip_serializing_if="Option::is_none")]
     pub image: Option<FeedImage>,
+    #[serde(skip_serializing_if="Option::is_none")]
     pub language: Option<String>,
 
     items_uuid: Vec<Uuid>,
 
+    #[serde(skip_serializing_if="Option::is_none")]
     checksum: Option<String>,
 }
 
@@ -38,7 +48,8 @@ impl Feed {
         let link = String::from(_link);
 
         let mut feed = Feed {
-            uuid: Option::None,
+            id: Option::None,
+            uuid: Uuid::new_v4(),
             title,
             description,
             link,
@@ -49,11 +60,6 @@ impl Feed {
             items_uuid: Vec::new(),
             checksum: Option::None,
         };
-
-        // generate the uuid
-        debug!("generating uuid");
-        feed.uuid = Option::Some(Uuid::new_v4());
-        debug!("generated {}", feed.uuid.unwrap());
 
         // compute the checksum
         if !feed.compute_checksum() {
@@ -77,29 +83,12 @@ impl Feed {
         }
     }
 
-    pub fn to_document(&self) -> Option<Document> {
-        let mut document = Document::new();
-
-        document.insert("uuid", self.uuid.clone());
-        document.insert("title", self.title.clone());
-        document.insert("description", self.description.clone());
-        document.insert("link", self.link.clone());
-        document.insert("category", self.category.clone());
-        document.insert("copyright", self.copyright.clone());
-        document.insert("image", self.image.clone());
-        document.insert("language", self.language.clone());
-        document.insert("items_uuid", self.items_uuid.clone());
-        document.insert("checksum", self.checksum.clone());
-
-        return Option::Some(document);
+    pub fn get_uuid(&self) -> Uuid {
+        return self.uuid.clone();
     }
 
-    pub fn get_uuid(&self) -> Option<&Uuid> {
-        return self.uuid.as_ref();
-    }
-
-    pub fn get_checksum(&self) -> Option<&String> {
-        return self.checksum.as_ref();
+    pub fn get_checksum(&self) -> Option<String> {
+        return self.checksum.clone();
     }
 
     /// Compute the checksum of this feed.
@@ -118,7 +107,7 @@ impl Feed {
                 return true;
             }
             Err(e) => {
-                warn!("could not convert feed {:?} to json", self);
+                warn!("could not convert feed {:?} to json: {:?}", self, e);
                 return false;
             }
         }
@@ -130,15 +119,17 @@ impl Feed {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FeedImage {
     url: String,
     title: String,
     link: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct FeedItem {
+    #[serde(rename="_id", skip_serializing_if="Option::is_none")]
+    id: Option<mongodb::oid::ObjectId>,
     uuid: Option<Uuid>,
     title: String,
     link: String,
@@ -153,7 +144,7 @@ pub struct FeedItem {
 
 impl FeedItem {}
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FeedItemEnclosure {
     url: String,
     length: String,
