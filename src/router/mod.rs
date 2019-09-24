@@ -1,6 +1,9 @@
 mod feed;
 mod feed_items;
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
+/// Start the router
 pub fn start() {
     rocket::ignite()
         .mount(
@@ -20,4 +23,34 @@ pub fn start() {
             ],
         )
         .launch();
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Error reported by a router endpoint
+pub struct RouterError {
+    timestamp: u64,
+    message: String
+}
+
+impl RouterError {
+    /// Create a new struct using a &str
+    pub fn new_from_str(message: &str) -> RouterError {
+        Self::new(String::from(message))
+    }
+
+    /// Create a new struct using a String
+    pub fn new(message: String) -> RouterError {
+        let time: u64;
+        match SystemTime::now().duration_since(UNIX_EPOCH) {
+            Ok(_value) => time = _value.as_secs(),
+            Err(e) => {
+                // extremely bad if happens
+                panic!(e);
+            }
+        }
+        RouterError {
+            timestamp: time,
+            message
+        }
+    }
 }

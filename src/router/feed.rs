@@ -1,4 +1,7 @@
-use crate::db::model;
+use crate::{
+    db::model,
+    router::RouterError
+};
 
 use std::{
     option::Option,
@@ -35,7 +38,7 @@ pub fn get_feed_checksum(uuid: String) -> String {
     format = "application/json",
     data = "<_feed>"
 )]
-pub fn create_feed(_feed: Json<model::Feed>) -> Result<Json<model::Feed>, String> {
+pub fn create_feed(_feed: Json<model::Feed>) -> Result<Json<model::Feed>, Json<RouterError>> {
     let client = &crate::DB_CLIENT;
     let db = client.db("feeder");
 
@@ -49,12 +52,18 @@ pub fn create_feed(_feed: Json<model::Feed>) -> Result<Json<model::Feed>, String
         },
         None => {
             warn!("failed to create new feed");
-            return Result::Err(String::from("failed to create feed"));
+            return Result::Err(Json(RouterError::new_from_str("unexpected error when creating a feed")));
         }
     }
 
     debug!("saving the feed {:?} in the database", feed);
-    feed.save(db.clone(), Option::None);
+    match feed.save(db.clone(), Option::None) {
+        Ok(_) => {},
+        Err(e) => {
+            warn!("failed to save the new feed in the database: {:?}", e);
+            return Result::Err(Json(RouterError::new_from_str("failed to save the feed in the database")));
+        }
+    }
 
     return Result::Ok(Json(feed));
 }
