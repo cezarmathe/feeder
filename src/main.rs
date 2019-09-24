@@ -14,6 +14,7 @@ extern crate wither_derive;
 
 #[macro_use]
 mod common;
+#[macro_use]
 mod db;
 mod router;
 
