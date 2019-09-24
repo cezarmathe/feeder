@@ -153,7 +153,7 @@ mod test {
             "My example description for my feed test",
             "https://example.com",
         );
-        if _feed.is_none() {
+        if _feed.is_err() {
             panic!("Failed to create feed");
         }
 
