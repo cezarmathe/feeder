@@ -12,22 +12,21 @@ extern crate serde_derive;
 #[macro_use(Model)]
 extern crate wither_derive;
 
+#[macro_use]
+mod common;
+mod db;
+mod router;
+
 use std::env;
 
 use log::{debug, error, info};
-use mongodb::db::ThreadedDatabase;
-use mongodb::Client;
-use mongodb::ThreadedClient;
-
-mod db;
-mod router;
+use mongodb::{db::ThreadedDatabase, Client, ThreadedClient};
 
 lazy_static! {
     static ref _LOG_FILE: &'static str = {
         match env::var("LOG_FILE")
             .unwrap_or(String::from("STDOUT"))
-            .as_str()
-        {
+            .as_str() {
             "FILE" => "feeder.log",
             "STDERR" => "/dev/stderr",
             "DEVNULL" => "/dev/null",
@@ -48,7 +47,7 @@ lazy_static! {
             _ => log::LevelFilter::Info,
         }
     };
-    static ref LOG: u8 = {
+    static ref _LOG: u8 = {
         simple_logging::log_to_file(*_LOG_FILE, *_LOG_LEVEL_FILTER).unwrap();
         0
     };
@@ -103,7 +102,8 @@ lazy_static! {
 }
 
 fn main() {
-    *LOG;
+    #![allow(warnings)]
+    *_LOG;
     debug!("started main");
 
     DB_CLIENT.db("feeder").collection("feeds");

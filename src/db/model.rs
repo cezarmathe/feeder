@@ -1,46 +1,44 @@
-use std::option::Option;
-use std::str;
-use std::vec::Vec;
+use crate::{common::error::Error, create_error};
 
-use crypto::digest::Digest;
-use crypto::sha3::Sha3;
+use std::{option::Option, vec::Vec};
+
+use crypto::{digest::Digest, sha3::Sha3};
 use log::{debug, error, warn};
-use mongodb::{
-    coll::options::IndexModel,
-    oid::ObjectId
-};
+use mongodb::{coll::options::IndexModel, oid::ObjectId};
 use uuid::Uuid;
+
+const SCOPE: &str = "database/model";
 
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct Feed {
-    #[serde(rename="_id", skip_serializing_if="Option::is_none", skip)]
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none", skip)]
     id: Option<ObjectId>,
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     uuid: Option<Uuid>,
 
     pub title: String,
     pub description: String,
     pub link: String,
 
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub copyright: Option<String>,
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<FeedImage>,
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
 
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub items_uuid: Option<Vec<Uuid>>,
 
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     checksum: Option<String>,
 }
 
 impl Feed {
     /// Create a new feed.
-    pub fn new(_title: &str, _description: &str, _link: &str) -> Option<Self> {
+    pub fn new(_title: &str, _description: &str, _link: &str) -> Result<Self, Error> {
         debug!(
             "creating a new feed struct with args: {:?}, {:?}, {:?}",
             _title, _description, _link
@@ -66,24 +64,12 @@ impl Feed {
 
         // compute the checksum
         if !feed.compute_checksum() {
-            error!("checksum not computed, returning Option::None");
-            return Option::None;
+            error!("checksum could not computed");
+            return Result::Err(create_error!(SCOPE, "failed to compute the SHA256 checksum for the feed"));
         }
 
         debug!("successfully created feed: {:?}", feed);
-        return Option::Some(feed);
-    }
-
-    pub fn to_json(&self) -> Option<String> {
-        match serde_json::to_string(self) {
-            Ok(_result) => {
-                Option::Some(_result)
-            },
-            Err(e) => {
-                warn!("failed to convert feed {:?} to json: {:?}", self, e);
-                Option::None
-            }
-        }
+        return Result::Ok(feed);
     }
 
     pub fn get_uuid(&self) -> Option<Uuid> {
@@ -131,7 +117,7 @@ pub struct FeedImage {
 
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct FeedItem {
-    #[serde(rename="_id", skip_serializing_if="Option::is_none")]
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     id: Option<mongodb::oid::ObjectId>,
     uuid: Option<Uuid>,
     title: String,
@@ -160,7 +146,7 @@ mod test {
 
     #[test]
     fn feed_new_test() {
-        *crate::LOG;
+        *crate::_LOG;
 
         let _feed = Feed::new(
             "My title",
