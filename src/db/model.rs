@@ -13,12 +13,14 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct Feed {
-    #[serde(rename="_id", skip_serializing_if="Option::is_none")]
+    #[serde(rename="_id", skip_serializing_if="Option::is_none", skip)]
     id: Option<ObjectId>,
-    uuid: Uuid,
-    title: String,
-    description: String,
-    link: String,
+    #[serde(skip_serializing_if="Option::is_none")]
+    uuid: Option<Uuid>,
+
+    pub title: String,
+    pub description: String,
+    pub link: String,
 
     #[serde(skip_serializing_if="Option::is_none")]
     pub category: Option<String>,
@@ -29,7 +31,8 @@ pub struct Feed {
     #[serde(skip_serializing_if="Option::is_none")]
     pub language: Option<String>,
 
-    items_uuid: Vec<Uuid>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub items_uuid: Option<Vec<Uuid>>,
 
     #[serde(skip_serializing_if="Option::is_none")]
     checksum: Option<String>,
@@ -49,7 +52,7 @@ impl Feed {
 
         let mut feed = Feed {
             id: Option::None,
-            uuid: Uuid::new_v4(),
+            uuid: Option::Some(Uuid::new_v4()),
             title,
             description,
             link,
@@ -57,7 +60,7 @@ impl Feed {
             copyright: Option::None,
             image: Option::None,
             language: Option::None,
-            items_uuid: Vec::new(),
+            items_uuid: Option::Some(Vec::new()),
             checksum: Option::None,
         };
 
@@ -83,7 +86,7 @@ impl Feed {
         }
     }
 
-    pub fn get_uuid(&self) -> Uuid {
+    pub fn get_uuid(&self) -> Option<Uuid> {
         return self.uuid.clone();
     }
 

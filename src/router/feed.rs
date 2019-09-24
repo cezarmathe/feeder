@@ -1,15 +1,19 @@
 use crate::db::model;
 
-use std::option::Option;
-use std::vec::Vec;
+use std::{
+    option::Option,
+    result::Result,
+    vec::Vec
+};
 
 use log::{debug, warn};
 use mongodb::{
     db::ThreadedDatabase,
     ThreadedClient
 };
+use wither::prelude::Model;
+
 use rocket_contrib::json::Json;
-use wither::prelude::*;
 
 #[get("/feeds/<uuid>?with_items&<with_items>")]
 pub fn get_feed(uuid: String, with_items: Option<bool>) -> Json<model::Feed> {
@@ -29,17 +33,30 @@ pub fn get_feed_checksum(uuid: String) -> String {
 #[post(
     "/feeds",
     format = "application/json",
-    data = "<feed>"
+    data = "<_feed>"
 )]
-pub fn create_feed(feed: Json<model::Feed>) -> Json<model::Feed> {
+pub fn create_feed(_feed: Json<model::Feed>) -> Result<Json<model::Feed>, String> {
     let client = &crate::DB_CLIENT;
     let db = client.db("feeder");
-    debug!("retrieved feed collection from the database");
+
+    let mut feed: model::Feed;
+    match model::Feed::new(
+        _feed.0.title.as_str(),
+        _feed.0.description.as_str(),
+        _feed.0.link.as_str()) {
+        Some(_value) => {
+            feed = _value;
+        },
+        None => {
+            warn!("failed to create new feed");
+            return Result::Err(String::from("failed to create feed"));
+        }
+    }
 
     debug!("saving the feed {:?} in the database", feed);
-    let saved_feed = feed.0.save(db.clone(), Option::None);
+    feed.save(db.clone(), Option::None);
 
-    return feed;
+    return Result::Ok(Json(feed));
 }
 
 #[put(
