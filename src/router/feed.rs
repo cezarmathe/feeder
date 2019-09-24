@@ -36,7 +36,8 @@ pub fn create_feed(feed: Json<model::Feed>) -> Json<model::Feed> {
     let db = client.db("feeder");
     debug!("retrieved feed collection from the database");
 
-//    feed.save(db.clone(), Option::None);
+    debug!("saving the feed {:?} in the database", feed);
+    let saved_feed = feed.0.save(db.clone(), Option::None);
 
     return feed;
 }
