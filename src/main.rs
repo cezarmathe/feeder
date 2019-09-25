@@ -11,6 +11,8 @@ extern crate serde;
 extern crate serde_derive;
 #[macro_use(Model)]
 extern crate wither_derive;
+#[macro_use]
+extern crate bson;
 
 #[macro_use]
 mod common;

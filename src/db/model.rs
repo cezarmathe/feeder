@@ -16,9 +16,9 @@ pub struct Feed {
     #[serde(skip_serializing_if = "Option::is_none")]
     uuid: Option<Uuid>,
 
-    pub title: String,
-    pub description: String,
-    pub link: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub link: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
@@ -51,9 +51,9 @@ impl Feed {
         let mut feed = Feed {
             id: Option::None,
             uuid: Option::Some(Uuid::new_v4()),
-            title,
-            description,
-            link,
+            title: Option::Some(title),
+            description: Option::Some(description),
+            link: Option::Some(link),
             category: Option::None,
             copyright: Option::None,
             image: Option::None,
@@ -70,6 +70,23 @@ impl Feed {
 
         debug!("successfully created feed: {:?}", feed);
         return Result::Ok(feed);
+    }
+
+    pub fn with_uuid(uuid: Uuid) -> Self {
+        let mut feed = Feed {
+            id: Option::None,
+            uuid: Option::Some(uuid),
+            title: Option::None,
+            description: Option::None,
+            link: Option::None,
+            category: Option::None,
+            copyright: Option::None,
+            image: Option::None,
+            language: Option::None,
+            items_uuid: Option::None,
+            checksum: Option::None,
+        };
+        feed
     }
 
     pub fn get_uuid(&self) -> Option<Uuid> {
