@@ -1,4 +1,4 @@
-use std::option::Option;
+use std::{any::Any, option::Option};
 
 use serde::Serialize;
 
@@ -14,7 +14,7 @@ pub struct Report<T: Serialize> {
 
 impl<T: Serialize> Report<T> {
     /// Create a new Report without additional data
-    pub fn new(scope: String, message: String) -> Report<T> {
+    pub fn new(scope: String, message: String) -> Report<dyn Any> {
         Report {
             timestamp: super::timestamp(),
             scope,

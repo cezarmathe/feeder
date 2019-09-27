@@ -48,6 +48,23 @@ macro_rules! create_error {
     };
 }
 
+/// Unwrap an Option into a Result
+#[macro_export]
+macro_rules! option_to_result {
+    ($opt: expr, $scope: ident, $message: literal) => {
+        match $opt {
+            Some(_value) => {
+                return std::result::Result::Ok(_value);
+            },
+            None => {
+                let err: crate::common::error::Error;
+                err = crate::common::create_error!($scope, $message)
+                return std::result::Result::Err();
+            }
+        };
+    };
+}
+
 /// Get the current timestamp(for reports and errors)
 fn timestamp() -> u64 {
     match SystemTime::now().duration_since(UNIX_EPOCH) {

@@ -1,4 +1,4 @@
-use crate::{common::error::Error, create_error, get_db};
+use crate::{common::error::Error, create_error, get_db, option_to_result};
 
 use super::model::Feed;
 
@@ -85,11 +85,13 @@ pub fn get_feed_checksum(uuid: Uuid) -> Result<String, Error> {
 
     let feed: Feed = get_feed(uuid.clone())?;
 
-    match feed.get_checksum() {
-        Some(_value) => Result::Ok(_value),
-        None => Result::Err(create_error!(
-            SCOPE,
-            format!("feed with uuid {} does not have a checksum", uuid)
-        )),
-    }
+    let err_msg: String = format!("feed with uuid {} does not have a checksum", uuid);
+    option_to_result!(feed.get_checksum(), SCOPE, err_msg)
+//    match feed.get_checksum() {
+//        Some(_value) => Result::Ok(_value),
+//        None => Result::Err(create_error!(
+//            SCOPE,
+//            format!("feed with uuid {} does not have a checksum", uuid)
+//        )),
+//    }
 }
