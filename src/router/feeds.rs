@@ -1,5 +1,5 @@
 use crate::{
-    common::error::Error,
+    common::{JsonResult, report::Report},
     db::{feed, model::Feed},
     json_result,
 };
@@ -7,14 +7,13 @@ use crate::{
 use std::{option::Option, result::Result, str::FromStr, vec::Vec};
 
 use log::*;
-
 use rocket_contrib::json::Json;
 use uuid::Uuid;
 
 const SCOPE: &str = "router/feeds";
 
 #[get("/feeds/<uuid>?<with_items>")]
-pub fn get_feed(uuid: String, with_items: Option<String>) -> Result<Json<Feed>, Json<Error>> {
+pub fn get_feed(uuid: String, with_items: Option<String>) -> JsonResult<Feed> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed(_value)),
         Err(e) => {
@@ -25,12 +24,12 @@ pub fn get_feed(uuid: String, with_items: Option<String>) -> Result<Json<Feed>, 
 }
 
 #[get("/feeds?<with_items>")]
-pub fn get_feeds(with_items: Option<String>) -> Result<Json<Vec<Feed>>, Json<Error>> {
+pub fn get_feeds(with_items: Option<String>) -> JsonResult<Vec<Feed>> {
     json_result!(feed::get_feeds())
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum(uuid: String) -> Result<Json<String>, Json<Error>> {
+pub fn get_feed_checksum(uuid: String) -> JsonResult<String> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed_checksum(_value)),
         Err(e) => {
@@ -41,7 +40,7 @@ pub fn get_feed_checksum(uuid: String) -> Result<Json<String>, Json<Error>> {
 }
 
 #[post("/feeds", format = "application/json", data = "<_feed>")]
-pub fn create_feed(_feed: Json<Feed>) -> Result<Json<Feed>, Json<Error>> {
+pub fn create_feed(_feed: Json<Feed>) -> JsonResult<Feed> {
     if _feed.title.is_none() {}
     if _feed.description.is_none() {}
     if _feed.link.is_none() {}
@@ -49,11 +48,11 @@ pub fn create_feed(_feed: Json<Feed>) -> Result<Json<Feed>, Json<Error>> {
 }
 
 #[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]
-pub fn update_feed(uuid: String, feed: Json<Feed>) -> Json<Feed> {
+pub fn update_feed(uuid: String, feed: Json<Feed>) -> JsonResult<Feed> {
     unimplemented!();
 }
 
 #[delete("/feeds/<uuid>")]
-pub fn delete_feed(uuid: String) {
+pub fn delete_feed(uuid: String) -> JsonResult<Report<Feed>> {
     unimplemented!();
 }

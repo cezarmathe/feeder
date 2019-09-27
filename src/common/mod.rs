@@ -1,4 +1,12 @@
 pub mod error;
+pub mod report;
+
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use rocket_contrib::json::Json;
+
+/// Type that makes it easier to represent a Json result
+pub type JsonResult<T> = Result<Json<T>, Json<error::Error>>;
 
 /// Match a Result<T, E> and return a Result<Json<T>, Json<E>>.
 #[macro_export]
@@ -38,4 +46,15 @@ macro_rules! create_error {
             std::string::String::from($message),
         )
     };
+}
+
+/// Get the current timestamp(for reports and errors)
+fn timestamp() -> u64 {
+    match SystemTime::now().duration_since(UNIX_EPOCH) {
+        Ok(_value) => _value.as_secs(),
+        Err(e) => {
+            // extremely bad if happens
+            panic!(e);
+        }
+    }
 }
