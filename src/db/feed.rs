@@ -4,9 +4,8 @@ use super::model::Feed;
 
 use std::{option::Option, vec::Vec};
 
-use bson::Bson;
 use log::*;
-use mongodb::{Document, ThreadedClient};
+use mongodb::ThreadedClient;
 use uuid::Uuid;
 use wither::prelude::*;
 

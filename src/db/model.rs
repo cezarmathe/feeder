@@ -72,23 +72,6 @@ impl Feed {
         return Result::Ok(feed);
     }
 
-    pub fn with_uuid(uuid: Uuid) -> Self {
-        let mut feed = Feed {
-            id: Option::None,
-            uuid: Option::Some(uuid),
-            title: Option::None,
-            description: Option::None,
-            link: Option::None,
-            category: Option::None,
-            copyright: Option::None,
-            image: Option::None,
-            language: Option::None,
-            items_uuid: Option::None,
-            checksum: Option::None,
-        };
-        feed
-    }
-
     pub fn get_uuid(&self) -> Option<Uuid> {
         return self.uuid.clone();
     }

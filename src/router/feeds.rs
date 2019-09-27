@@ -2,7 +2,7 @@ use crate::{common::error::Error, json_result, db::{model::Feed, feed}};
 
 use std::{option::Option, result::Result, str::FromStr, vec::Vec};
 
-use log::{debug, warn};
+use log::*;
 
 use rocket_contrib::json::Json;
 use uuid::Uuid;
