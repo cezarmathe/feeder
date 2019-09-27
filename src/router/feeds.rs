@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 const SCOPE: &str = "router/feeds";
 
-#[get("/feeds/<uuid>?with_items&<with_items>")]
-pub fn get_feed(uuid: String, with_items: Option<bool>) -> Result<Json<Feed>, Json<Error>> {
+#[get("/feeds/<uuid>?<with_items>")]
+pub fn get_feed(uuid: String, with_items: Option<String>) -> Result<Json<Feed>, Json<Error>> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed(_value)),
         Err(e) => {
@@ -20,8 +20,8 @@ pub fn get_feed(uuid: String, with_items: Option<bool>) -> Result<Json<Feed>, Js
     }
 }
 
-#[get("/feeds?with_items&<with_items>")]
-pub fn get_feeds(with_items: Option<bool>) -> Result<Json<Vec<Feed>>, Json<Error>> {
+#[get("/feeds?<with_items>")]
+pub fn get_feeds(with_items: Option<String>) -> Result<Json<Vec<Feed>>, Json<Error>> {
     json_result!(feed::get_feeds())
 }
 
