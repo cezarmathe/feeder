@@ -23,12 +23,18 @@ pub fn create_new_feed(model: Feed) -> Result<Feed, Error> {
 
     match feed.save(get_db!().clone(), Option::None) {
         Ok(_) => {
-            debug!("successfully saved feed with uuid {:?} in the database", feed);
+            debug!(
+                "successfully saved feed with uuid {:?} in the database",
+                feed
+            );
             Result::Ok(feed)
-        },
+        }
         Err(e) => {
             warn!("could not save feed: {:?} | in the database: {:?}", feed, e);
-            Result::Err(create_error!(SCOPE, "error occurred when saving the feed in the database"))
+            Result::Err(create_error!(
+                SCOPE,
+                "error occurred when saving the feed in the database"
+            ))
         }
     }
 }
@@ -40,9 +46,13 @@ pub fn get_feeds() -> Result<Vec<Feed>, Error> {
         Ok(_value) => {
             debug!("extracted feeds from the database");
             Result::Ok(_value)
-        } Err(e) => {
+        }
+        Err(e) => {
             warn!("the database did not return any feeds: {:?}", e);
-            Result::Err(create_error!(SCOPE, "the database could not return any feed"))
+            Result::Err(create_error!(
+                SCOPE,
+                "the database could not return any feed"
+            ))
         }
     }
 }
@@ -64,7 +74,10 @@ pub fn get_feed(uuid: Uuid) -> Result<Feed, Error> {
         }
     }
 
-    Result::Err(create_error!(SCOPE, format!("did not find any feeds with the UUID {}", uuid)))
+    Result::Err(create_error!(
+        SCOPE,
+        format!("did not find any feeds with the UUID {}", uuid)
+    ))
 }
 
 pub fn get_feed_checksum(uuid: Uuid) -> Result<String, Error> {
@@ -74,6 +87,9 @@ pub fn get_feed_checksum(uuid: Uuid) -> Result<String, Error> {
 
     match feed.get_checksum() {
         Some(_value) => Result::Ok(_value),
-        None => Result::Err(create_error!(SCOPE, format!("feed with uuid {} does not have a checksum", uuid)))
+        None => Result::Err(create_error!(
+            SCOPE,
+            format!("feed with uuid {} does not have a checksum", uuid)
+        )),
     }
 }

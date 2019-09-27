@@ -23,7 +23,8 @@ lazy_static! {
     static ref _LOG_FILE: &'static str = {
         match env::var("LOG_FILE")
             .unwrap_or(String::from("STDOUT"))
-            .as_str() {
+            .as_str()
+        {
             "FILE" => "feeder.log",
             "STDERR" => "/dev/stderr",
             "DEVNULL" => "/dev/null",

@@ -1,5 +1,5 @@
-mod feeds;
 mod feed_items;
+mod feeds;
 
 /// Start the router
 pub fn start() {

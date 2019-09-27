@@ -65,7 +65,10 @@ impl Feed {
         // compute the checksum
         if !feed.compute_checksum() {
             error!("checksum could not computed");
-            return Result::Err(create_error!(SCOPE, "failed to compute the SHA256 checksum for the feed"));
+            return Result::Err(create_error!(
+                SCOPE,
+                "failed to compute the SHA256 checksum for the feed"
+            ));
         }
 
         debug!("successfully created feed: {:?}", feed);

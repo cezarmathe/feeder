@@ -1,4 +1,8 @@
-use crate::{common::error::Error, json_result, db::{model::Feed, feed}};
+use crate::{
+    common::error::Error,
+    db::{feed, model::Feed},
+    json_result,
+};
 
 use std::{option::Option, result::Result, str::FromStr, vec::Vec};
 
@@ -38,15 +42,9 @@ pub fn get_feed_checksum(uuid: String) -> Result<Json<String>, Json<Error>> {
 
 #[post("/feeds", format = "application/json", data = "<_feed>")]
 pub fn create_feed(_feed: Json<Feed>) -> Result<Json<Feed>, Json<Error>> {
-    if _feed.title.is_none() {
-
-    }
-    if _feed.description.is_none() {
-
-    }
-    if _feed.link.is_none() {
-
-    }
+    if _feed.title.is_none() {}
+    if _feed.description.is_none() {}
+    if _feed.link.is_none() {}
     json_result!(feed::create_new_feed(_feed.0))
 }
 
