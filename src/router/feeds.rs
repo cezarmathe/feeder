@@ -41,9 +41,15 @@ pub fn get_feed_checksum(uuid: String) -> JsonResult<String> {
 
 #[post("/feeds", format = "application/json", data = "<_feed>")]
 pub fn create_feed(_feed: Json<Feed>) -> JsonResult<Feed> {
-    if _feed.title.is_none() {}
-    if _feed.description.is_none() {}
-    if _feed.link.is_none() {}
+    if _feed.title.is_none() {
+        json_result!(Result::Err(create_error!(SCOPE, "model does not have a title")))
+    }
+    if _feed.description.is_none() {
+        json_result!(Result::Err(create_error!(SCOPE, "model does not have a description")))
+    }
+    if _feed.link.is_none() {
+        json_result!(Result::Err(create_error!(SCOPE, "model does not have a link")))
+    }
     json_result!(feed::create_new_feed(_feed.0))
 }
 
