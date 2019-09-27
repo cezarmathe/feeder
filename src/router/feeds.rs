@@ -26,8 +26,14 @@ pub fn get_feeds(with_items: Option<String>) -> Result<Json<Vec<Feed>>, Json<Err
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum(uuid: String) -> String {
-    unimplemented!();
+pub fn get_feed_checksum(uuid: String) -> Result<Json<String>, Json<Error>> {
+    match Uuid::from_str(uuid.as_str()) {
+        Ok(_value) => json_result!(feed::get_feed_checksum(_value)),
+        Err(e) => {
+            warn!("could not decode uuid: {:?}", e);
+            json_result!(Result::Err(create_error!(SCOPE, "uuid is not valid")))
+        }
+    }
 }
 
 #[post("/feeds", format = "application/json", data = "<_feed>")]

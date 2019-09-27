@@ -66,3 +66,14 @@ pub fn get_feed(uuid: Uuid) -> Result<Feed, Error> {
 
     Result::Err(create_error!(SCOPE, format!("did not find any feeds with the UUID {}", uuid)))
 }
+
+pub fn get_feed_checksum(uuid: Uuid) -> Result<String, Error> {
+    debug!("get_feed_checksum requested with uuid: {}", uuid);
+
+    let feed: Feed = get_feed(uuid.clone())?;
+
+    match feed.get_checksum() {
+        Some(_value) => Result::Ok(_value),
+        None => Result::Err(create_error!(SCOPE, format!("feed with uuid {} does not have a checksum", uuid)))
+    }
+}
