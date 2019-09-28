@@ -19,6 +19,37 @@ macro_rules! json_result {
     };
 }
 
+/// Unwrap an Option into a Result
+#[macro_export]
+macro_rules! option_to_result {
+    ($opt: expr, $scope: ident, $message: ident) => {
+        match $opt {
+            Some(_value) => {
+                return std::result::Result::Ok(_value);
+            },
+            None => {
+
+                let err: crate::common::error::Error;
+                err = create_error!($scope, $message);
+                return std::result::Result::Err(err);
+            }
+        };
+    };
+    ($opt: expr, $scope: ident, $message: literal) => {
+        match $opt {
+            Some(_value) => {
+                return std::result::Result::Ok(_value);
+            },
+            None => {
+
+                let err: crate::common::error::Error;
+                err = create_error!($scope, $message);
+                return std::result::Result::Err(err);
+            }
+        };
+    };
+}
+
 /// Create a new error using a scope and a message.
 #[macro_export]
 macro_rules! create_error {
@@ -45,23 +76,6 @@ macro_rules! create_error {
             std::string::String::from($scope),
             std::string::String::from($message),
         )
-    };
-}
-
-/// Unwrap an Option into a Result
-#[macro_export]
-macro_rules! option_to_result {
-    ($opt: expr, $scope: ident, $message: literal) => {
-        match $opt {
-            Some(_value) => {
-                return std::result::Result::Ok(_value);
-            },
-            None => {
-                let err: crate::common::error::Error;
-                err = crate::common::create_error!($scope, $message)
-                return std::result::Result::Err();
-            }
-        };
     };
 }
 
