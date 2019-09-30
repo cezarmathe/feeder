@@ -19,8 +19,7 @@ mod router;
 
 use std::env;
 
-use log::{debug, error, info};
-use mongodb::{db::ThreadedDatabase, Client, ThreadedClient};
+use log::*;
 
 lazy_static! {
     static ref _LOG_FILE: &'static str = {
@@ -85,30 +84,12 @@ lazy_static! {
             }
         }
     };
-    pub static ref DB_CLIENT: Client = {
-        match Client::connect(&*_DB_HOST, *_DB_PORT) {
-            Ok(_db_client) => {
-                info!(
-                    "Initialized database with hostname {} and port {}",
-                    *_DB_HOST, *_DB_PORT
-                );
-                _db_client
-            }
-            Err(e) => {
-                error!("Failed to initialize database: {:?}", e);
-                panic!();
-            }
-        }
-    };
 }
 
 fn main() {
     #![allow(warnings)]
     *_LOG;
     debug!("started main");
-
-    DB_CLIENT.db("feeder").collection("feeds");
-    DB_CLIENT.db("feeder").collection("feed_items");
 
     debug!("starting router");
     router::start();

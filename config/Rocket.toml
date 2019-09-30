@@ -6,17 +6,17 @@ keep_alive = 5
 forms = 0
 
 [global.databases]
-feeder = "mongodb://localhost:27017"
+feeder = {url = "mongodb://localhost:27017"}
 
 [development]
 address = "localhost"
-log = "DEBUG"
+log = "debug"
 
 [staging]
 address = "0.0.0.0"
-log = "INFO"
+log = "normal"
 
 [production]
 address = "0.0.0.0"
-log = "WARN"
+log = "critical"
 

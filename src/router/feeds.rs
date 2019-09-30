@@ -13,7 +13,7 @@ use uuid::Uuid;
 const SCOPE: &str = "router/feeds";
 
 #[get("/feeds/<uuid>?<with_items>")]
-pub fn get_feed(db_conn: super::FeederDbConn,
+pub fn get_feed(db_conn: FeederDbConn,
                 uuid: String,
                 with_items: Option<String>) -> JsonResult<Feed> {
     match Uuid::from_str(uuid.as_str()) {
@@ -26,13 +26,13 @@ pub fn get_feed(db_conn: super::FeederDbConn,
 }
 
 #[get("/feeds?<with_items>")]
-pub fn get_feeds(db_conn: super::FeederDbConn,
+pub fn get_feeds(db_conn: FeederDbConn,
                  with_items: Option<String>) -> JsonResult<Vec<Feed>> {
     json_result!(feed::get_feeds(db_conn)) // TODO 29/09: check with_items
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum(db_conn: super::FeederDbConn,
+pub fn get_feed_checksum(db_conn: FeederDbConn,
                          uuid: String) -> JsonResult<String> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed_checksum(db_conn, _value)),
@@ -44,7 +44,7 @@ pub fn get_feed_checksum(db_conn: super::FeederDbConn,
 }
 
 #[post("/feeds", format = "application/json", data = "<model>")]
-pub fn create_feed(db_conn: super::FeederDbConn,
+pub fn create_feed(db_conn: FeederDbConn,
                    model: Json<Feed>) -> JsonResult<Feed> {
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(SCOPE, "model does not have a title")))
