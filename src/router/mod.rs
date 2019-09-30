@@ -1,20 +1,10 @@
+mod catchers;
 mod feed_items;
 mod feeds;
 
-use crate::{db::FeederDbConn, common::error::Error};
-
-use rocket_contrib::json::Json;
+use crate::db::FeederDbConn;
 
 const SCOPE: &str = "router";
-
-#[catch(404)]
-fn http_404() -> Json<Error> {
-    let err: Error = create_error!(
-        SCOPE,
-        "404 not found"
-    );
-    Json(err)
-}
 
 /// Start the router
 pub fn start() {
@@ -36,6 +26,15 @@ pub fn start() {
                 feed_items::delete_feed_item,
             ],
         )
-        .register(catchers![http_404])
+        .register(catchers![
+            catchers::http_400_bad_request,
+            catchers::http_401_unauthorized,
+            catchers::http_403_forbidden,
+            catchers::http_404_not_found,
+            catchers::http_406_not_acceptable,
+            catchers::http_500_internal_server_error,
+            catchers::http_501_not_implemented,
+            catchers::http_503_service_unavailable,
+        ])
         .launch();
 }
