@@ -1,4 +1,5 @@
 mod catchers;
+mod fairings;
 mod feed_items;
 mod feeds;
 
@@ -10,6 +11,7 @@ const SCOPE: &str = "router";
 pub fn start() {
     rocket::ignite()
         .attach(FeederDbConn::fairing())
+        .attach(fairings::RequestCounter::new())
         .mount(
             "/",
             routes![
