@@ -1,11 +1,9 @@
 pub mod feed;
 pub mod model;
 
-const DB_NAME: &str = "feeder";
+use std::sync::Arc;
 
-#[macro_export]
-macro_rules! get_db {
-    () => {
-        &crate::DB_CLIENT.db(crate::db::DB_NAME)
-    };
-}
+use mongodb::db::DatabaseInner;
+
+#[database("feeder")]
+pub struct FeederDbConn(Arc<DatabaseInner>);

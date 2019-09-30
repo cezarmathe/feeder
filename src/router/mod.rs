@@ -1,7 +1,7 @@
 mod feed_items;
 mod feeds;
 
-use crate::common::error::Error;
+use crate::{db::FeederDbConn, common::error::Error};
 
 use rocket_contrib::json::Json;
 
@@ -19,7 +19,7 @@ fn http_404() -> Json<Error> {
 /// Start the router
 pub fn start() {
     rocket::ignite()
-        .register(catchers![http_404])
+        .attach(FeederDbConn::fairing())
         .mount(
             "/",
             routes![
@@ -36,5 +36,6 @@ pub fn start() {
                 feed_items::delete_feed_item,
             ],
         )
+        .register(catchers![http_404])
         .launch();
 }

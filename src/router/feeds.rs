@@ -1,6 +1,6 @@
 use crate::{
     common::{JsonResult, report::Report},
-    db::{feed, model::Feed},
+    db::{feed, FeederDbConn, model::Feed},
     json_result,
 };
 
@@ -13,9 +13,11 @@ use uuid::Uuid;
 const SCOPE: &str = "router/feeds";
 
 #[get("/feeds/<uuid>?<with_items>")]
-pub fn get_feed(uuid: String, with_items: Option<String>) -> JsonResult<Feed> {
+pub fn get_feed(db_conn: super::FeederDbConn,
+                uuid: String,
+                with_items: Option<String>) -> JsonResult<Feed> {
     match Uuid::from_str(uuid.as_str()) {
-        Ok(_value) => json_result!(feed::get_feed(_value)), // TODO 29/09: check with_items
+        Ok(_value) => json_result!(feed::get_feed(db_conn, _value)), // TODO 29/09: check with_items
         Err(e) => {
             warn!("could not decode uuid: {:?}", e);
             json_result!(Result::Err(create_error!(SCOPE, "uuid is not valid")))
@@ -24,14 +26,16 @@ pub fn get_feed(uuid: String, with_items: Option<String>) -> JsonResult<Feed> {
 }
 
 #[get("/feeds?<with_items>")]
-pub fn get_feeds(with_items: Option<String>) -> JsonResult<Vec<Feed>> {
-    json_result!(feed::get_feeds()) // TODO 29/09: check with_items
+pub fn get_feeds(db_conn: super::FeederDbConn,
+                 with_items: Option<String>) -> JsonResult<Vec<Feed>> {
+    json_result!(feed::get_feeds(db_conn)) // TODO 29/09: check with_items
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum(uuid: String) -> JsonResult<String> {
+pub fn get_feed_checksum(db_conn: super::FeederDbConn,
+                         uuid: String) -> JsonResult<String> {
     match Uuid::from_str(uuid.as_str()) {
-        Ok(_value) => json_result!(feed::get_feed_checksum(_value)),
+        Ok(_value) => json_result!(feed::get_feed_checksum(db_conn, _value)),
         Err(e) => {
             warn!("could not decode uuid: {:?}", e);
             json_result!(Result::Err(create_error!(SCOPE, "uuid is not valid")))
@@ -39,18 +43,19 @@ pub fn get_feed_checksum(uuid: String) -> JsonResult<String> {
     }
 }
 
-#[post("/feeds", format = "application/json", data = "<_feed>")]
-pub fn create_feed(_feed: Json<Feed>) -> JsonResult<Feed> {
-    if _feed.title.is_none() {
+#[post("/feeds", format = "application/json", data = "<model>")]
+pub fn create_feed(db_conn: super::FeederDbConn,
+                   model: Json<Feed>) -> JsonResult<Feed> {
+    if model.title.is_none() {
         json_result!(Result::Err(create_error!(SCOPE, "model does not have a title")))
     }
-    if _feed.description.is_none() {
+    if model.description.is_none() {
         json_result!(Result::Err(create_error!(SCOPE, "model does not have a description")))
     }
-    if _feed.link.is_none() {
+    if model.link.is_none() {
         json_result!(Result::Err(create_error!(SCOPE, "model does not have a link")))
     }
-    json_result!(feed::create_new_feed(_feed.0))
+    json_result!(feed::create_new_feed(db_conn, model.0))
 }
 
 #[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]

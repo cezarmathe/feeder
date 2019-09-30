@@ -6,7 +6,7 @@ keep_alive = 5
 forms = 0
 
 [global.databases]
-feeder_mongodb = "mongodb://localhost:27017"
+feeder = "mongodb://localhost:27017"
 
 [development]
 address = "localhost"
