@@ -15,7 +15,7 @@ const SCOPE: &str = "router/feeds";
 #[get("/feeds/<uuid>?<with_items>")]
 pub fn get_feed(uuid: String, with_items: Option<String>) -> JsonResult<Feed> {
     match Uuid::from_str(uuid.as_str()) {
-        Ok(_value) => json_result!(feed::get_feed(_value)),
+        Ok(_value) => json_result!(feed::get_feed(_value)), // TODO 29/09: check with_items
         Err(e) => {
             warn!("could not decode uuid: {:?}", e);
             json_result!(Result::Err(create_error!(SCOPE, "uuid is not valid")))
@@ -25,7 +25,7 @@ pub fn get_feed(uuid: String, with_items: Option<String>) -> JsonResult<Feed> {
 
 #[get("/feeds?<with_items>")]
 pub fn get_feeds(with_items: Option<String>) -> JsonResult<Vec<Feed>> {
-    json_result!(feed::get_feeds())
+    json_result!(feed::get_feeds()) // TODO 29/09: check with_items
 }
 
 #[get("/feeds/<uuid>/checksum")]
