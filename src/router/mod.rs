@@ -1,9 +1,25 @@
 mod feed_items;
 mod feeds;
 
+use crate::common::error::Error;
+
+use rocket_contrib::json::Json;
+
+const SCOPE: &str = "router";
+
+#[catch(404)]
+fn http_404() -> Json<Error> {
+    let err: Error = create_error!(
+        SCOPE,
+        "404 not found"
+    );
+    Json(err)
+}
+
 /// Start the router
 pub fn start() {
     rocket::ignite()
+        .register(catchers![http_404])
         .mount(
             "/",
             routes![
