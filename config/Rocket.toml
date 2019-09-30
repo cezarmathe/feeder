@@ -1,0 +1,22 @@
+[global]
+port = 8000
+keep_alive = 5
+
+[global.limits]
+forms = 0
+
+[global.databases]
+feeder_mongodb = "mongodb://localhost:27017"
+
+[development]
+address = "localhost"
+log = "DEBUG"
+
+[staging]
+address = "0.0.0.0"
+log = "INFO"
+
+[production]
+address = "0.0.0.0"
+log = "WARN"
+
