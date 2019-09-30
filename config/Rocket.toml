@@ -2,6 +2,8 @@
 port = 8000
 keep_alive = 5
 
+rss_storage_dir = "~/rss"
+
 [global.limits]
 forms = 0
 
