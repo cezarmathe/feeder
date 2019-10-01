@@ -51,39 +51,6 @@ lazy_static! {
         simple_logging::log_to_file(*_LOG_FILE, *_LOG_LEVEL_FILTER).unwrap();
         0
     };
-    static ref _DB_HOST: String = {
-        debug!("retrieving database host");
-        match env::var("DB_HOST") {
-            Ok(_value) => {
-                debug!("database host is: {}", _value);
-                _value
-            }
-            Err(e) => {
-                error!(
-                    "Failed to get the database host from the environment variable DB_HOST: {:?}",
-                    e
-                );
-                panic!();
-            }
-        }
-    };
-    static ref _DB_PORT: u16 = {
-        debug!("retrieving database port");
-        let _port: String = env::var("DB_PORT").unwrap_or(String::from("27017"));
-        match _port.parse::<u16>() {
-            Ok(_value) => {
-                debug!("database port is: {}", _value);
-                _value
-            }
-            Err(e) => {
-                error!(
-                    "Failed to get the database port from the environment variable DB_PORT: {:?}",
-                    e
-                );
-                panic!();
-            }
-        }
-    };
 }
 
 fn main() {
@@ -94,3 +61,4 @@ fn main() {
     debug!("starting router");
     router::start();
 }
+
