@@ -11,7 +11,7 @@ const SCOPE: &str = "router";
 pub fn start() {
     rocket::ignite()
         .attach(FeederDbConn::fairing())
-        .attach(fairings::RequestCounter::new())
+        //        .attach(fairings::RequestCounter::new())
         .mount(
             "/",
             routes![
