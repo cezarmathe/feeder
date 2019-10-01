@@ -4,10 +4,7 @@ use rocket::Request;
 use rocket_contrib::json::Json;
 
 fn catcher_json(scope: &str, message: &str) -> Json<Error> {
-    let err: Error = create_error!(
-        scope,
-        message
-    );
+    let err: Error = create_error!(scope, message);
     Json(err)
 }
 

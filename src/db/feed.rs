@@ -10,8 +10,7 @@ use wither::prelude::*;
 
 const SCOPE: &str = "database/feed";
 
-pub fn create_new_feed(db_conn: super::FeederDbConn,
-                       model: Feed) -> Result<Feed, Error> {
+pub fn create_new_feed(db_conn: super::FeederDbConn, model: Feed) -> Result<Feed, Error> {
     debug!("create_new_feed requested with model: {:?}", model);
 
     debug!("creating feed from model data");
@@ -57,8 +56,7 @@ pub fn get_feeds(db_conn: super::FeederDbConn) -> Result<Vec<Feed>, Error> {
     }
 }
 
-pub fn get_feed(db_conn: super::FeederDbConn,
-                uuid: Uuid) -> Result<Feed, Error> {
+pub fn get_feed(db_conn: super::FeederDbConn, uuid: Uuid) -> Result<Feed, Error> {
     debug!("get_feed requested with uuid: {}", uuid);
 
     let feeds: Vec<Feed> = get_feeds(db_conn)?;
@@ -81,8 +79,7 @@ pub fn get_feed(db_conn: super::FeederDbConn,
     ))
 }
 
-pub fn get_feed_checksum(db_conn: super::FeederDbConn,
-                         uuid: Uuid) -> Result<String, Error> {
+pub fn get_feed_checksum(db_conn: super::FeederDbConn, uuid: Uuid) -> Result<String, Error> {
     debug!("get_feed_checksum requested with uuid: {}", uuid);
 
     let feed: Feed = get_feed(db_conn, uuid.clone())?;

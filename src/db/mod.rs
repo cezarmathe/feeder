@@ -7,5 +7,3 @@ use mongodb::db::DatabaseInner;
 
 #[database("feeder")]
 pub struct FeederDbConn(Arc<DatabaseInner>);
-
-

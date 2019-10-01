@@ -9,7 +9,7 @@ pub struct Report<T: Serialize> {
     scope: String,
     message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    data: Option<T>
+    data: Option<T>,
 }
 
 impl<T: Serialize> Report<T> {
@@ -19,7 +19,7 @@ impl<T: Serialize> Report<T> {
             timestamp: super::timestamp(),
             scope,
             message,
-            data: Option::None
+            data: Option::None,
         }
     }
 
@@ -29,7 +29,7 @@ impl<T: Serialize> Report<T> {
             timestamp: super::timestamp(),
             scope,
             message,
-            data: Option::Some(data)
+            data: Option::Some(data),
         }
     }
 }

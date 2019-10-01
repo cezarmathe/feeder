@@ -26,9 +26,8 @@ macro_rules! option_to_result {
         match $opt {
             Some(_value) => {
                 return std::result::Result::Ok(_value);
-            },
+            }
             None => {
-
                 let err: crate::common::error::Error;
                 err = create_error!($scope, $message);
                 return std::result::Result::Err(err);
@@ -39,9 +38,8 @@ macro_rules! option_to_result {
         match $opt {
             Some(_value) => {
                 return std::result::Result::Ok(_value);
-            },
+            }
             None => {
-
                 let err: crate::common::error::Error;
                 err = create_error!($scope, $message);
                 return std::result::Result::Err(err);

@@ -61,4 +61,3 @@ fn main() {
     debug!("starting router");
     router::start();
 }
-

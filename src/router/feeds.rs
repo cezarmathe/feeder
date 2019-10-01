@@ -1,6 +1,6 @@
 use crate::{
-    common::{JsonResult, report::Report},
-    db::{feed, FeederDbConn, model::Feed},
+    common::{report::Report, JsonResult},
+    db::{feed, model::Feed, FeederDbConn},
     json_result,
 };
 
@@ -13,9 +13,11 @@ use uuid::Uuid;
 const SCOPE: &str = "router/feeds";
 
 #[get("/feeds/<uuid>?<with_items>")]
-pub fn get_feed(db_conn: FeederDbConn,
-                uuid: String,
-                with_items: Option<String>) -> JsonResult<Feed> {
+pub fn get_feed(
+    db_conn: FeederDbConn,
+    uuid: String,
+    with_items: Option<String>,
+) -> JsonResult<Feed> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed(db_conn, _value)), // TODO 29/09: check with_items
         Err(e) => {
@@ -26,14 +28,12 @@ pub fn get_feed(db_conn: FeederDbConn,
 }
 
 #[get("/feeds?<with_items>")]
-pub fn get_feeds(db_conn: FeederDbConn,
-                 with_items: Option<String>) -> JsonResult<Vec<Feed>> {
+pub fn get_feeds(db_conn: FeederDbConn, with_items: Option<String>) -> JsonResult<Vec<Feed>> {
     json_result!(feed::get_feeds(db_conn)) // TODO 29/09: check with_items
 }
 
 #[get("/feeds/<uuid>/checksum")]
-pub fn get_feed_checksum(db_conn: FeederDbConn,
-                         uuid: String) -> JsonResult<String> {
+pub fn get_feed_checksum(db_conn: FeederDbConn, uuid: String) -> JsonResult<String> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed_checksum(db_conn, _value)),
         Err(e) => {
@@ -44,16 +44,24 @@ pub fn get_feed_checksum(db_conn: FeederDbConn,
 }
 
 #[post("/feeds", format = "application/json", data = "<model>")]
-pub fn create_feed(db_conn: FeederDbConn,
-                   model: Json<Feed>) -> JsonResult<Feed> {
+pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed> {
     if model.title.is_none() {
-        json_result!(Result::Err(create_error!(SCOPE, "model does not have a title")))
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "model does not have a title"
+        )))
     }
     if model.description.is_none() {
-        json_result!(Result::Err(create_error!(SCOPE, "model does not have a description")))
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "model does not have a description"
+        )))
     }
     if model.link.is_none() {
-        json_result!(Result::Err(create_error!(SCOPE, "model does not have a link")))
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "model does not have a link"
+        )))
     }
     json_result!(feed::create_new_feed(db_conn, model.0))
 }
