@@ -106,7 +106,7 @@ impl Feed {
             self.clone()
         };
 
-        match compute_checksum(self) {
+        match compute_checksum(feed) {
             Ok(checksum) => {
                 self.checksum = Option::Some(checksum);
                 Option::None
