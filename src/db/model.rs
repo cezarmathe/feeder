@@ -33,7 +33,7 @@ pub struct Feed {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub copyright: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub image: Option<FeedImage>,
+    pub image: Option<aux::FeedImage>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
 
@@ -179,13 +179,6 @@ impl Feed {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FeedImage {
-    url: String,
-    title: String,
-    link: String,
-}
-
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct FeedItem {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
@@ -197,7 +190,7 @@ pub struct FeedItem {
 
     pub author: Option<String>,
     pub comments: Option<String>,
-    pub enclosure: Option<FeedItemEnclosure>,
+    pub enclosure: Option<aux::FeedItemEnclosure>,
 
     checksum: Option<String>,
 }
@@ -208,11 +201,21 @@ impl FeedItem {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct FeedItemEnclosure {
-    url: String,
-    length: String,
-    _type: String,
+/// Module that contains auxiliary models
+pub mod aux {
+    #[derive(Clone, Debug, Deserialize, Serialize)]
+    pub struct FeedItemEnclosure {
+        url: String,
+        length: String,
+        _type: String,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize)]
+    pub struct FeedImage {
+        url: String,
+        title: String,
+        link: String,
+    }
 }
 
 #[cfg(test)]
