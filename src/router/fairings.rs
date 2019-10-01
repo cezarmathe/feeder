@@ -25,7 +25,7 @@ impl Fairing for RequestCounter {
         }
     }
 
-    fn on_request(&self, request: &mut Request, _: &Data) {
+    fn on_request(&self, _request: &mut Request, _: &Data) {
         self.count.fetch_add(1, Ordering::Relaxed);
         //        println!("Number of requests received: {}", self.count.load(Ordering::Relaxed));
     }

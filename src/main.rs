@@ -24,7 +24,7 @@ use log::*;
 lazy_static! {
     static ref _LOG_FILE: &'static str = {
         match env::var("LOG_FILE")
-            .unwrap_or(String::from("STDOUT"))
+            .unwrap_or_else(|_| String::from("STDOUT"))
             .as_str()
         {
             "FILE" => "feeder.log",
@@ -35,7 +35,7 @@ lazy_static! {
     };
     static ref _LOG_LEVEL_FILTER: log::LevelFilter = {
         match env::var("LOG_LEVEL")
-            .unwrap_or(String::from("INFO"))
+            .unwrap_or_else(|_| String::from("INFO"))
             .as_str()
         {
             "TRACE" => log::LevelFilter::Trace,

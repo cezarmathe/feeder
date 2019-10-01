@@ -82,7 +82,7 @@ pub fn get_feed(db_conn: super::FeederDbConn, uuid: Uuid) -> Result<Feed, Error>
 pub fn get_feed_checksum(db_conn: super::FeederDbConn, uuid: Uuid) -> Result<String, Error> {
     debug!("get_feed_checksum requested with uuid: {}", uuid);
 
-    let feed: Feed = get_feed(db_conn, uuid.clone())?;
+    let feed: Feed = get_feed(db_conn, uuid)?;
 
     let err_msg: String = format!("feed with uuid {} does not have a checksum", uuid);
     option_to_result!(feed.get_checksum(), SCOPE, err_msg)

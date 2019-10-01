@@ -12,11 +12,11 @@ use uuid::Uuid;
 
 const SCOPE: &str = "router/feeds";
 
-#[get("/feeds/<uuid>?<with_items>")]
+#[get("/feeds/<uuid>?<_with_items>")]
 pub fn get_feed(
     db_conn: FeederDbConn,
     uuid: String,
-    with_items: Option<String>,
+    _with_items: Option<String>,
 ) -> JsonResult<Feed> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => json_result!(feed::get_feed(db_conn, _value)), // TODO 29/09: check with_items
@@ -27,8 +27,8 @@ pub fn get_feed(
     }
 }
 
-#[get("/feeds?<with_items>")]
-pub fn get_feeds(db_conn: FeederDbConn, with_items: Option<String>) -> JsonResult<Vec<Feed>> {
+#[get("/feeds?<_with_items>")]
+pub fn get_feeds(db_conn: FeederDbConn, _with_items: Option<String>) -> JsonResult<Vec<Feed>> {
     json_result!(feed::get_feeds(db_conn)) // TODO 29/09: check with_items
 }
 
@@ -66,12 +66,12 @@ pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed>
     json_result!(feed::create_new_feed(db_conn, model.0))
 }
 
-#[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]
-pub fn update_feed(uuid: String, feed: Json<Feed>) -> JsonResult<Feed> {
+#[put("/feeds/<_uuid>", format = "application/json", data = "<_feed>")]
+pub fn update_feed(_uuid: String, _feed: Json<Feed>) -> JsonResult<Feed> {
     unimplemented!();
 }
 
-#[delete("/feeds/<uuid>")]
-pub fn delete_feed(uuid: String) -> JsonResult<Report<Feed>> {
+#[delete("/feeds/<_uuid>")]
+pub fn delete_feed(_uuid: String) -> JsonResult<Report<Feed>> {
     unimplemented!();
 }

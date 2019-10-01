@@ -80,17 +80,17 @@ impl Feed {
         }
 
         debug!("successfully created feed: {:?}", feed);
-        return Result::Ok(feed);
+        Result::Ok(feed)
     }
 
     /// Get the UUID of this feed
     pub fn get_uuid(&self) -> Option<Uuid> {
-        return self.uuid.clone();
+        self.uuid
     }
 
     /// Get the checksum of this feed
     pub fn get_checksum(&self) -> Option<String> {
-        return self.checksum.clone();
+        self.checksum.clone()
     }
 
     /// Compute the checksum of this feed
@@ -98,13 +98,11 @@ impl Feed {
     fn compute_checksum(&mut self, db_conn: Option<FeederDbConn>) -> bool {
         debug!("computing checksum for feed {:?}", self);
 
-        let feed: Feed;
-
-        if db_conn.is_some() {
-            feed = self.clone().with_items(db_conn.unwrap());
+        let feed: Feed = if let Some(value) = db_conn {
+            self.clone().with_items(value)
         } else {
-            feed = self.clone();
-        }
+            self.clone()
+        };
 
         let json_result = serde_json::to_string(&feed);
 
@@ -113,19 +111,19 @@ impl Feed {
                 debug!("successfully converted feed to json: {}", json);
                 let mut hasher = Sha3::sha3_256();
                 hasher.input_str(json.as_str());
-                self.checksum = Some(String::from(hasher.result_str()));
+                self.checksum = Some(hasher.result_str());
                 debug!("successfully computed the checksum");
-                return true;
+                true
             }
             Err(e) => {
                 warn!("could not convert feed {:?} to json: {:?}", feed, e);
-                return false;
+                false
             }
         }
     }
 
     /// Return this feed along with its items
-    fn with_items(mut self, db_conn: FeederDbConn) -> Self {
+    fn with_items(mut self, _db_conn: FeederDbConn) -> Self {
         if self.items.is_none() {
             return self;
         }
@@ -133,8 +131,8 @@ impl Feed {
         let items_vec: ItemsVec = self.clone().items.unwrap();
         match items_vec {
             ItemsVec::Full(_) => self,
-            ItemsVec::Uuid(items) => {
-                let mut items_full: Vec<FeedItem> = Vec::new();
+            ItemsVec::Uuid(_items) => {
+                //                let mut items_full: Vec<FeedItem> = Vec::new();
 
                 //                for item in items {
                 //
