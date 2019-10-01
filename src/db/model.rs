@@ -6,6 +6,7 @@ use crypto::{digest::Digest, sha3::Sha3};
 use log::{debug, error, warn};
 use mongodb::{coll::options::IndexModel, oid::ObjectId};
 use uuid::Uuid;
+use serde::Serialize;
 
 const SCOPE: &str = "database/model";
 
@@ -71,11 +72,12 @@ impl Feed {
         };
 
         // compute the checksum
-        if !feed.compute_checksum(Option::None) {
+        if let Some(err) = feed.compute_checksum(Option::None) {
             error!("checksum could not computed");
+            let err_msg = format!("failed to compute the SHA256 checksum for the feed: {:?}", err);
             return Result::Err(create_error!(
                 SCOPE,
-                "failed to compute the SHA256 checksum for the feed"
+                err_msg
             ));
         }
 
@@ -95,7 +97,7 @@ impl Feed {
 
     /// Compute the checksum of this feed
     /// The checksum is saved inside the object
-    fn compute_checksum(&mut self, db_conn: Option<FeederDbConn>) -> bool {
+    pub fn compute_checksum(&mut self, db_conn: Option<FeederDbConn>) -> Option<Error> {
         debug!("computing checksum for feed {:?}", self);
 
         let feed: Feed = if let Some(value) = db_conn {
@@ -104,20 +106,13 @@ impl Feed {
             self.clone()
         };
 
-        let json_result = serde_json::to_string(&feed);
-
-        match json_result {
-            Ok(json) => {
-                debug!("successfully converted feed to json: {}", json);
-                let mut hasher = Sha3::sha3_256();
-                hasher.input_str(json.as_str());
-                self.checksum = Some(hasher.result_str());
-                debug!("successfully computed the checksum");
-                true
-            }
+        match compute_checksum(self) {
+            Ok(checksum) => {
+                self.checksum = Option::Some(checksum);
+                Option::None
+            },
             Err(e) => {
-                warn!("could not convert feed {:?} to json: {:?}", feed, e);
-                false
+                Option::Some(e)
             }
         }
     }
@@ -194,8 +189,52 @@ pub struct FeedItem {
 }
 
 impl FeedItem {
+
+    /// Create a new feed item
+    pub fn new(_title: &str, _link: &str, _description: &str) -> Result<Self, Error> {
+
+        let title = String::from(_title);
+        let link = String::from(_link);
+        let description = String::from(_description);
+
+        let mut feed_item = FeedItem {
+            id: Option::None,
+            uuid: Option::Some(Uuid::new_v4()),
+            title,
+            link,
+            description,
+            author: Option::None,
+            comments: Option::None,
+            enclosure: Option::None,
+            checksum: Option::None,
+        };
+
+        Result::Ok(feed_item)
+    }
+
+    pub fn compute_checksum(&mut self) -> Option<Error> {
+        Option::None
+    }
+
+    /// Get the uuid of this feed item
     pub fn get_uuid(&self) -> Option<Uuid> {
         self.uuid
+    }
+}
+
+/// Compute the checksum for a given model
+fn compute_checksum<T>(model: &mut T) -> Result<String, Error>
+    where T: Serialize + std::fmt::Debug {
+
+    if let Ok(json) = serde_json::to_string(&model) {
+        let mut hasher = Sha3::sha3_256();
+        hasher.input_str(json.as_str());
+
+        Result::Ok(hasher.result_str())
+    } else {
+        let err = format!("cannot create json representation for the model {:?}", model);
+
+        Result::Err(create_error!(SCOPE, err))
     }
 }
 
