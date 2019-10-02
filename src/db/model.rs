@@ -206,7 +206,7 @@ impl FeedItem {
         };
 
         if let Some(e) = feed_item.compute_checksum() {
-            Result::Err(e)
+            return Result::Err(e);
         }
 
         Result::Ok(feed_item)
