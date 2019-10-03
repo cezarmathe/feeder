@@ -13,7 +13,7 @@ function develop() {
 
   login_github
 
-  docker tag feeder:latest docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
+  docker tag feeder:develop docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
   docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
 }
 
