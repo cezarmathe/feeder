@@ -1,12 +1,30 @@
 #!/usr/bin/env bash
 
+function login_github() {
+  docker login docker.pkg.github.com -u ${GITHUB_USERNAME} -p ${GITHUB_TOKEN}
+  if [[ "$?" != 0 ]]; then
+    printf "%s.\n" "Failed to log in the github package registry."
+    exit 1
+  fi
+}
+
 function develop() {
   docker build -t feeder:develop -f docker/Dockerfile-dev .
+
+  login_github
+
+  docker tag feeder:latest docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
+  docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
 }
 
 function release() {
   local tag="$1"; shift
-  docker build -t feeder:${tag} -f docker/Dockerfile .
+
+#  build image
+
+  login_github
+
+#  push image
 }
 
 function main() {
