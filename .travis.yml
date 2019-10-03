@@ -1,9 +1,23 @@
+services:
+  - docker
+
 language: rust
 rust:
-#  - stable
-#  - beta
   - nightly
-matrix:
-#  allow_failures:
-#    - rust: nightly
-  fast_finish: true
+cache: cargo
+
+jobs:
+  include:
+    - stage: build
+      script: cargo build --verbose
+    - stage: test
+      script: cargo test --verbose
+    - stage: docker-image-dev
+      if: branch = development AND type = push
+      script: ./scripts/docker-image-release.sh development
+    - stage: docker-image-release
+      if: branch = master AND type = push
+      script: ./scripts/docker-image-release.sh
+    - stage: binary-release
+      if: branch = master AND type = push
+      script: ./scripts/binary-release.sh
