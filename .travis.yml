@@ -9,12 +9,12 @@ cache: cargo
 jobs:
   include:
     - stage: build
-      script: cargo build --verbose
+      script: cargo build --verbose --release
     - stage: test
-      script: cargo test --verbose
+      script: cargo test --verbose --release
     - stage: docker image development
       if: branch = develop AND type = push
-      script: ./scripts/docker-image-release.sh develop
+      script: cargo build --release && ./scripts/docker-image-release.sh develop
     - stage: binary release
       if: branch = master AND type = push
       script: ./scripts/binary-release.sh

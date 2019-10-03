@@ -1,12 +1,11 @@
-FROM rustlang/rust:nightly
+FROM alpine
 
 LABEL com.cezarmathe.feeder-authir="Armand Cezar Mathe <cezarmathe [at] gmail [dot] com>"
 LABEL com.cezarmathe.feeder-version="0.1.0"
 
-RUN mkdir feeder
-WORKDIR /feeder
+WORKDIR /
 
-RUN curl -Ssl -o feeder https://github.com/cezarmathe/feeder/releases/0.1.0/feeder-amd64
+RUN curl -Ssl -o /feeder https://github.com/cezarmathe/feeder/releases/0.1.0/feeder-amd64
 
 ENV DB_HOST="localhost"
 ENV DB_PORT=27017
