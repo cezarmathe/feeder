@@ -18,7 +18,7 @@ function login_github() {
 
 function develop() {
   run_build
-  
+
   docker build -t feeder:develop -f docker/Dockerfile-dev .
   if [[ "$?" != 0 ]]; then
     printf "%s.\n" "Failed to build the docker image"
