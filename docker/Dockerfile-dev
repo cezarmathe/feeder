@@ -4,10 +4,12 @@ LABEL com.cezarmathe.feeder-author="Armand Cezar Mathe <cezarmathe [at] gmail [d
 
 WORKDIR /
 
-COPY ./target/release/feeder /feeder
+COPY ./target/debug/feeder /bin/feeder
 
 ENV DB_HOST="localhost"
 ENV DB_PORT=27017
 
 EXPOSE 8000
-ENTRYPOINT /feeder
+ENTRYPOINT [ "/bin/feeder" ]
+CMD [ "" ]
+
