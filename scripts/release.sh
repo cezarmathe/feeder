@@ -47,7 +47,7 @@ function main() {
 
   if [[ "${action}" == "tag" ]]; then
     if [[ -z "${action_param}" ]]; then
-      printf "%s.\n" "The tag command requires a another parameter: the tag that is used to marg the latest commit"
+      printf "%s.\n" "The tag command requires a another parameter: the tag that is used to merge the latest commit"
       exit 1
     fi
     tag ${action_param}
