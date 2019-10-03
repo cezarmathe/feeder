@@ -15,10 +15,13 @@ function push() {
 }
 
 function tag() {
+  local tag_name="$1"; shift
   checkout_master
   git tag -s ${1}
-  sed -i.bk 's/version = \"[0-9].[0-9].[0-9]\"/version = \"0.2.0\"/' Cargo.toml
+  sed -i.bk "s/version = \"[0-9].[0-9].[0-9]\"/version = \""${tag_name}"\"/" Cargo.toml
   rm Cargo.toml.bk
+  sed -i.bk "s/LABEL com.cezarmathe.feeder-version=\"[0-9].[0-9].[0-9]\"/LABEL com.cezarmathe.feeder-version=\""${tag_name}"\"/" docker/Dockerfile
+  rm docker/Dockerfile.bk
   exit 0
 }
 
@@ -33,7 +36,7 @@ function main() {
   local action_param="$1"; shift
 
   if [[ -z "${action}" ]]; then
-    printf "%s.\n" "Missing action. Try with merge, tag or push"
+    printf "%s.\n" "Missing action. Try merge, tag or push"
     exit 1
   fi
 

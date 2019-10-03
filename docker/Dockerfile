@@ -1,4 +1,4 @@
-FROM rustlang/rust
+FROM rustlang/rust:nightly
 
 MAINTAINER Armand Cezar Mathe <cezarmathe [at] gmail [dot] com>
 

@@ -12,12 +12,12 @@ jobs:
       script: cargo build --verbose
     - stage: test
       script: cargo test --verbose
-    - stage: docker-image-dev
+    - stage: docker image development
       if: branch = develop AND type = push
-      script: ./scripts/docker-image-release.sh development
-    - stage: docker-image-release
-      if: branch = master AND type = push
-      script: ./scripts/docker-image-release.sh
-    - stage: binary-release
+      script: ./scripts/docker-image-release.sh develop
+    - stage: binary release
       if: branch = master AND type = push
       script: ./scripts/binary-release.sh
+    - stage: docker image release
+      if: branch = master AND type = push
+      script: ./scripts/docker-image-release.sh release
