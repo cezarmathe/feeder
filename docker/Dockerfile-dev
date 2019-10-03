@@ -1,14 +1,10 @@
 FROM rustlang/rust:nightly
 
-MAINTAINER Armand Cezar Mathe <cezarmathe [at] gmail [dot] com>
+LABEL com.cezarmathe.feeder-authir="Armand Cezar Mathe <cezarmathe [at] gmail [dot] com>"
 
-RUN mkdir feeder
-WORKDIR /feeder
+WORKDIR /
 
-COPY . .
-
-RUN cargo build --release
-RUN cp target/release/feeder feeder
+COPY ./target/release/feeder ./feeder
 
 ENV DB_HOST="localhost"
 ENV DB_PORT=27017

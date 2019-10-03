@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+function run_build() {
+  cargo build --release
+  if [[ "$?" != 0 ]]; then
+    printf "%s.\n" "Failed to build the binary."
+    exit 1
+  fi
+}
+
 function login_github() {
   docker login docker.pkg.github.com -u ${GITHUB_USERNAME} -p ${GITHUB_TOKEN}
   if [[ "$?" != 0 ]]; then
@@ -9,6 +17,8 @@ function login_github() {
 }
 
 function develop() {
+  run_build
+  
   docker build -t feeder:develop -f docker/Dockerfile-dev .
   if [[ "$?" != 0 ]]; then
     printf "%s.\n" "Failed to build the docker image"
