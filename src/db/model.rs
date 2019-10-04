@@ -277,6 +277,7 @@ mod test {
 
     #[test]
     fn feed_new_test() {
+        #![allow(warnings)]
         *crate::_LOG;
 
         let _feed = Feed::new(
