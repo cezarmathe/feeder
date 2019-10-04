@@ -147,9 +147,7 @@ impl Feed {
 
         let items_vec: ItemsVec = self.clone().items.unwrap();
         match items_vec {
-            ItemsVec::Uuid(_) => {
-                return;
-            }
+            ItemsVec::Uuid(_) => {}
             ItemsVec::Full(items) => {
                 let mut items_uuid: Vec<Uuid> = Vec::new();
 
