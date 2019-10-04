@@ -20,7 +20,11 @@ pub enum ItemsVec {
 
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct Feed {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none", skip)]
+    #[serde(
+        rename = "_id",
+        skip_serializing_if = "Option::is_none",
+        skip_serializing
+    )]
     id: Option<ObjectId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     uuid: Option<Uuid>,

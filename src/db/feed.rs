@@ -107,8 +107,11 @@ pub fn delete_feed(db_conn: super::DbConn, uuid: Uuid) -> Result<Report<String>,
     debug!("delete_feed requested with uuid {}", uuid);
 
     let prev_feed = get_feed(db_conn.clone(), uuid)?;
-    if prev_feed.delete(db_conn.clone()).is_err() {
-        // FIXME: consider logging the error received from the db
+    if let Err(e) = prev_feed.delete(db_conn.clone()) {
+        warn!(
+            "{}",
+            format!("failed to delete the feed with the uuid {}: {:?}", uuid, e)
+        );
         return Result::Err(create_error!(SCOPE, "failed to delete the feed"));
     }
 
