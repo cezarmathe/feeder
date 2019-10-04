@@ -33,7 +33,7 @@ pub fn get_feed(db_conn: FeederDbConn, uuid: String, with_items: Option<bool>) -
     }
 
     // Check if the feed is requested with items or not
-    if let None = with_items {
+    if with_items.is_none() {
         json_result!(Result::Ok(feed))
     }
     if !with_items.unwrap() {
@@ -55,7 +55,7 @@ pub fn get_feeds(db_conn: FeederDbConn, with_items: Option<bool>) -> JsonResult<
     }
 
     // Check if the feed is requested with items or not
-    if let None = with_items {
+    if with_items.is_none() {
         json_result!(Result::Ok(feeds))
     }
     if !with_items.unwrap() {
