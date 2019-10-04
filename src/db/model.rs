@@ -1,4 +1,4 @@
-use crate::{common::error::Error, create_error, db::FeederDbConn};
+use crate::{common::error::Error, create_error, db::DbConnection};
 
 use std::{option::Option, vec::Vec};
 
@@ -101,16 +101,14 @@ impl Feed {
 
     /// Compute the checksum of this feed
     /// The checksum is saved inside the object
-    pub fn compute_checksum(&mut self, db_conn: Option<FeederDbConn>) -> Option<Error> {
+    pub fn compute_checksum(&mut self, db_conn: Option<DbConnection>) -> Option<Error> {
         debug!("computing checksum for feed {:?}", self);
 
-        let mut feed: Feed = if let Some(value) = db_conn {
-            self.clone().with_items(value)
-        } else {
-            self.clone()
-        };
+        if let Some(value) = db_conn {
+            self.with_items(value)
+        }
 
-        match compute_checksum(&mut feed) {
+        match compute_checksum(self) {
             Ok(checksum) => {
                 self.checksum = Option::Some(checksum);
                 Option::None
@@ -120,38 +118,38 @@ impl Feed {
     }
 
     /// Return this feed along with its items
-    fn with_items(mut self, _db_conn: FeederDbConn) -> Self {
+    pub fn with_items(&mut self, _db_conn: DbConnection) {
         if self.items.is_none() {
-            return self;
+            return;
         }
 
-        let items_vec: ItemsVec = self.clone().items.unwrap();
-        match items_vec {
-            ItemsVec::Full(_) => self,
-            ItemsVec::Uuid(_items) => {
-                //                let mut items_full: Vec<FeedItem> = Vec::new();
+        // let items_vec: ItemsVec = self.clone().items.unwrap();
+        // match items_vec {
+        //     ItemsVec::Full(_) => self,
+        //     ItemsVec::Uuid(_items) => {
+        //         //                let mut items_full: Vec<FeedItem> = Vec::new();
 
-                //                for item in items {
-                //
-                //                }
-
-                self
-            }
-        }
+        //         //                for item in items {
+        //         //
+        //         //                }
+        //     }
+        // }
     }
 
     /// Return this feed with the items having only uuids
-    fn with_uuids(mut self) -> Self {
+    pub fn with_uuids(&mut self) {
         // TODO add some kind of error returning
 
         // If there are no items to be converted, return
         if self.items.is_none() {
-            return self;
+            return;
         }
 
         let items_vec: ItemsVec = self.clone().items.unwrap();
         match items_vec {
-            ItemsVec::Uuid(_) => self,
+            ItemsVec::Uuid(_) => {
+                return;
+            }
             ItemsVec::Full(items) => {
                 let mut items_uuid: Vec<Uuid> = Vec::new();
 
@@ -163,13 +161,12 @@ impl Feed {
                 }
 
                 self.items = Option::Some(ItemsVec::Uuid(items_uuid));
-                self
             }
-        }
+        };
     }
 
     /// Generate the RSS representation of this feed.
-    pub fn generate_rss(&self) {
+    pub fn generate_rss(&self, _db_conn: DbConnection) {
         unimplemented!();
     }
 }

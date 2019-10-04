@@ -7,19 +7,38 @@ use crate::{
 use std::{option::Option, result::Result, vec::Vec};
 
 use rocket_contrib::json::Json;
+use uuid::Uuid;
 
 const SCOPE: &str = "router/feeds";
 
-#[get("/feeds/<uuid>?<_with_items>")]
-pub fn get_feed(
-    db_conn: FeederDbConn,
-    uuid: String,
-    _with_items: Option<String>,
-) -> JsonResult<Feed> {
+#[get("/feeds/<uuid>?<with_items>")]
+pub fn get_feed(db_conn: FeederDbConn, uuid: String, with_items: Option<bool>) -> JsonResult<Feed> {
+    // Check if the uuid is valid and return if it's not
+    let good_uuid: Uuid;
     match check_uuid(uuid, SCOPE) {
-        Ok(_value) => json_result!(feed::get_feed(db_conn.clone(), _value)),
-        Err(e) => json_result!(Result::Err(e)),
+        Ok(value) => good_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
     }
+
+    // Get the feed from the database
+    let mut feed: Feed;
+    match feed::get_feed(db_conn.clone(), good_uuid) {
+        Ok(value) => feed = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Check if the feed is requested with items or not
+    if let Some(value) = with_items {
+        if value {
+            feed.with_items(db_conn.clone());
+        }
+    }
+
+    json_result!(Result::Ok(feed))
 }
 
 #[get("/feeds?<_with_items>")]

@@ -14,7 +14,7 @@ use wither::prelude::*;
 const SCOPE: &str = "database/feed";
 
 /// Create a new feed in the database
-pub fn create_new_feed(db_conn: super::DbConn, model: Feed) -> Result<Feed, Error> {
+pub fn create_new_feed(db_conn: super::DbConnection, model: Feed) -> Result<Feed, Error> {
     debug!("create_new_feed requested with model: {:?}", model);
 
     debug!("creating feed from model data");
@@ -43,7 +43,7 @@ pub fn create_new_feed(db_conn: super::DbConn, model: Feed) -> Result<Feed, Erro
 }
 
 /// Get all the feeds from the database
-pub fn get_feeds(db_conn: super::DbConn) -> Result<Vec<Feed>, Error> {
+pub fn get_feeds(db_conn: super::DbConnection) -> Result<Vec<Feed>, Error> {
     debug!("get_feeds requested");
 
     match Feed::find(db_conn.clone(), Option::None, Option::None) {
@@ -62,7 +62,7 @@ pub fn get_feeds(db_conn: super::DbConn) -> Result<Vec<Feed>, Error> {
 }
 
 /// Get a feed from the database, based on its uuid
-pub fn get_feed(db_conn: super::DbConn, uuid: Uuid) -> Result<Feed, Error> {
+pub fn get_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Feed, Error> {
     debug!("get_feed requested with uuid: {}", uuid);
 
     let feeds: Vec<Feed> = get_feeds(db_conn)?;
@@ -86,7 +86,7 @@ pub fn get_feed(db_conn: super::DbConn, uuid: Uuid) -> Result<Feed, Error> {
 }
 
 /// Get the checksum for a feed, based on its uuid
-pub fn get_feed_checksum(db_conn: super::DbConn, uuid: Uuid) -> Result<String, Error> {
+pub fn get_feed_checksum(db_conn: super::DbConnection, uuid: Uuid) -> Result<String, Error> {
     debug!("get_feed_checksum requested with uuid: {}", uuid);
 
     let feed: Feed = get_feed(db_conn, uuid)?;
@@ -96,14 +96,14 @@ pub fn get_feed_checksum(db_conn: super::DbConn, uuid: Uuid) -> Result<String, E
 }
 
 /// Update the contents of a feed, based on its uuid
-pub fn update_feed(db_conn: super::DbConn, uuid: Uuid, model: Feed) -> Result<Feed, Error> {
+pub fn update_feed(db_conn: super::DbConnection, uuid: Uuid, model: Feed) -> Result<Feed, Error> {
     debug!("update_feed requested with feed model: {:?}", model);
 
     let prev_feed = get_feed(db_conn.clone(), uuid)?;
     Result::Ok(prev_feed)
 }
 
-pub fn delete_feed(db_conn: super::DbConn, uuid: Uuid) -> Result<Report<String>, Error> {
+pub fn delete_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Report<String>, Error> {
     debug!("delete_feed requested with uuid {}", uuid);
 
     let prev_feed = get_feed(db_conn.clone(), uuid)?;

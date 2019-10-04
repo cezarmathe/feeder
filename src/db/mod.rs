@@ -10,4 +10,4 @@ use mongodb::db::DatabaseInner;
 pub struct FeederDbConn(Arc<DatabaseInner>);
 
 /// Abreviation for a database connection struct
-pub type DbConn = Arc<DatabaseInner>;
+pub type DbConnection = Arc<DatabaseInner>;
