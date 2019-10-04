@@ -17,7 +17,7 @@ pub type JsonResult<T> = Result<Json<T>, Json<error::Error>>;
 macro_rules! json_result {
     ($x: expr) => {
         match $x {
-            Ok(_value) => return std::result::Result::Ok(rocket_contrib::json::Json(_value)),
+            Ok(value) => return std::result::Result::Ok(rocket_contrib::json::Json(value)),
             Err(e) => return std::result::Result::Err(rocket_contrib::json::Json(e)),
         };
     };
