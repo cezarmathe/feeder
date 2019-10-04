@@ -81,6 +81,7 @@ pub fn get_feed_checksum(db_conn: FeederDbConn, uuid: String) -> JsonResult<Stri
 
 #[post("/feeds", format = "application/json", data = "<model>")]
 pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed> {
+    // Filter out bad models
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
@@ -99,21 +100,48 @@ pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed>
             "model does not have a link"
         )))
     }
+
     json_result!(feed::create_new_feed(db_conn.clone(), model.0))
 }
 
-#[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]
-pub fn update_feed(db_conn: FeederDbConn, uuid: String, feed: Json<Feed>) -> JsonResult<Feed> {
+#[put("/feeds/<uuid>", format = "application/json", data = "<model>")]
+pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> JsonResult<Feed> {
+    // Check if the uuid is valid and return if it's not
+    let good_uuid: Uuid;
     match check_uuid(uuid, SCOPE) {
-        Ok(_value) => json_result!(feed::update_feed(db_conn.clone(), _value, feed.0)),
-        Err(e) => json_result!(Result::Err(e)),
+        Ok(value) => good_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
     }
+
+    // Filter out bad models
+    if model.title.is_none() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "model does not have a title"
+        )))
+    }
+    if model.description.is_none() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "model does not have a description"
+        )))
+    }
+    if model.link.is_none() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "model does not have a link"
+        )))
+    }
+
+    json_result!(feed::update_feed(db_conn.clone(), good_uuid, model.0))
 }
 
 #[delete("/feeds/<uuid>")]
 pub fn delete_feed(db_conn: FeederDbConn, uuid: String) -> JsonResult<Report<String>> {
     match check_uuid(uuid, SCOPE) {
-        Ok(_value) => json_result!(feed::delete_feed(db_conn.clone(), _value)),
+        Ok(value) => json_result!(feed::delete_feed(db_conn.clone(), value)),
         Err(e) => json_result!(Result::Err(e)),
     }
 }
