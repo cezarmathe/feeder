@@ -1,9 +1,13 @@
 pub mod error;
 pub mod report;
 
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    str::FromStr,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use rocket_contrib::json::Json;
+use uuid::Uuid;
 
 /// Type that makes it easier to represent a Json result
 pub type JsonResult<T> = Result<Json<T>, Json<error::Error>>;
@@ -84,6 +88,16 @@ fn timestamp() -> u64 {
         Err(e) => {
             // extremely bad if happens
             panic!(e);
+        }
+    }
+}
+
+pub fn check_uuid(uuid: String, scope: &str) -> Result<Uuid, error::Error> {
+    match Uuid::from_str(uuid.as_str()) {
+        Ok(_value) => Result::Ok(_value),
+        Err(e) => {
+            let err_msg = format!("uuid is not valid: {:?}", e);
+            Result::Err(create_error!(scope, err_msg))
         }
     }
 }

@@ -1,14 +1,12 @@
 use crate::{
-    common::{report::Report, JsonResult},
+    common::{check_uuid, report::Report, JsonResult},
     db::{feed, model::Feed, FeederDbConn},
     json_result,
 };
 
-use std::{option::Option, result::Result, str::FromStr, vec::Vec};
+use std::{option::Option, result::Result, vec::Vec};
 
-use log::*;
 use rocket_contrib::json::Json;
-use uuid::Uuid;
 
 const SCOPE: &str = "router/feeds";
 
@@ -18,12 +16,9 @@ pub fn get_feed(
     uuid: String,
     _with_items: Option<String>,
 ) -> JsonResult<Feed> {
-    match Uuid::from_str(uuid.as_str()) {
-        Ok(_value) => json_result!(feed::get_feed(db_conn, _value)), // TODO 29/09: check with_items
-        Err(e) => {
-            warn!("could not decode uuid: {:?}", e);
-            json_result!(Result::Err(create_error!(SCOPE, "uuid is not valid")))
-        }
+    match check_uuid(uuid, SCOPE) {
+        Ok(_value) => json_result!(feed::get_feed(db_conn, _value)),
+        Err(e) => json_result!(Result::Err(e)),
     }
 }
 
@@ -34,12 +29,9 @@ pub fn get_feeds(db_conn: FeederDbConn, _with_items: Option<String>) -> JsonResu
 
 #[get("/feeds/<uuid>/checksum")]
 pub fn get_feed_checksum(db_conn: FeederDbConn, uuid: String) -> JsonResult<String> {
-    match Uuid::from_str(uuid.as_str()) {
+    match check_uuid(uuid, SCOPE) {
         Ok(_value) => json_result!(feed::get_feed_checksum(db_conn, _value)),
-        Err(e) => {
-            warn!("could not decode uuid: {:?}", e);
-            json_result!(Result::Err(create_error!(SCOPE, "uuid is not valid")))
-        }
+        Err(e) => json_result!(Result::Err(e)),
     }
 }
 
@@ -66,12 +58,18 @@ pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed>
     json_result!(feed::create_new_feed(db_conn, model.0))
 }
 
-#[put("/feeds/<_uuid>", format = "application/json", data = "<_feed>")]
-pub fn update_feed(_uuid: String, _feed: Json<Feed>) -> JsonResult<Feed> {
-    unimplemented!();
+#[put("/feeds/<uuid>", format = "application/json", data = "<feed>")]
+pub fn update_feed(db_conn: FeederDbConn, uuid: String, feed: Json<Feed>) -> JsonResult<Feed> {
+    match check_uuid(uuid, SCOPE) {
+        Ok(_value) => json_result!(feed::update_feed(db_conn, _value, feed.0)),
+        Err(e) => json_result!(Result::Err(e)),
+    }
 }
 
-#[delete("/feeds/<_uuid>")]
-pub fn delete_feed(_uuid: String) -> JsonResult<Report<Feed>> {
-    unimplemented!();
+#[delete("/feeds/<uuid>")]
+pub fn delete_feed(db_conn: FeederDbConn, uuid: String) -> JsonResult<Report<String>> {
+    match check_uuid(uuid, SCOPE) {
+        Ok(_value) => json_result!(feed::delete_feed(db_conn, _value)),
+        Err(e) => json_result!(Result::Err(e)),
+    }
 }
