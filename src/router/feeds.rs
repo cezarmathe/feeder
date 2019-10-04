@@ -6,6 +6,7 @@ use crate::{
 
 use std::{option::Option, result::Result, vec::Vec};
 
+use log::*;
 use rocket_contrib::json::Json;
 use uuid::Uuid;
 
@@ -32,18 +33,42 @@ pub fn get_feed(db_conn: FeederDbConn, uuid: String, with_items: Option<bool>) -
     }
 
     // Check if the feed is requested with items or not
-    if let Some(value) = with_items {
-        if value {
-            feed.with_items(db_conn.clone());
-        }
+    if let None = with_items {
+        json_result!(Result::Ok(feed))
+    }
+    if !with_items.unwrap() {
+        json_result!(Result::Ok(feed))
     }
 
+    debug!("feed requested with items");
+    feed.with_items(db_conn.clone());
     json_result!(Result::Ok(feed))
 }
 
-#[get("/feeds?<_with_items>")]
-pub fn get_feeds(db_conn: FeederDbConn, _with_items: Option<String>) -> JsonResult<Vec<Feed>> {
-    json_result!(feed::get_feeds(db_conn.clone())) // TODO 29/09: check with_items
+#[get("/feeds?<with_items>")]
+pub fn get_feeds(db_conn: FeederDbConn, with_items: Option<bool>) -> JsonResult<Vec<Feed>> {
+    // Get the feed from the database
+    let mut feeds: Vec<Feed>;
+    match feed::get_feeds(db_conn.clone()) {
+        Ok(value) => feeds = value,
+        Err(e) => json_result!(Result::Err(e)),
+    }
+
+    // Check if the feed is requested with items or not
+    if let None = with_items {
+        json_result!(Result::Ok(feeds))
+    }
+    if !with_items.unwrap() {
+        json_result!(Result::Ok(feeds))
+    }
+
+    debug!("feeds requested with items");
+    // Get the feed items for each individual feed
+    for feed in &mut feeds {
+        feed.with_items(db_conn.clone());
+    }
+
+    json_result!(Result::Ok(feeds))
 }
 
 #[get("/feeds/<uuid>/checksum")]
