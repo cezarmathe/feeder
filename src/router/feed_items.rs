@@ -81,9 +81,42 @@ pub fn get_feed_item(
     json_result!(Result::Err(create_error!(SCOPE, err_msg)))
 }
 
-#[get("/feeds/<_feed_uuid>/items")]
-pub fn get_feed_items(_feed_uuid: String) -> Json<Vec<FeedItem>> {
-    unimplemented!();
+#[get("/feeds/<feed_uuid>/items")]
+pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Vec<FeedItem>> {
+    // Check if the uuids are valid
+    let good_feed_uuid: Uuid;
+    match check_uuid(feed_uuid, SCOPE) {
+        Ok(value) => good_feed_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Check if the feed exists and get its items
+    let mut feed: Feed;
+    match feed::get_feed(db_conn.clone(), good_feed_uuid) {
+        Ok(value) => feed = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+    if feed.items.is_none() {
+        json_result!(Result::Err(create_error!(SCOPE, "feed has no items")))
+    }
+
+    // If the feed does not contain the full items, retrieve all the items
+    if let ItemsVec::Uuid(_) = feed.items.clone().unwrap() {
+        feed.with_items(db_conn.clone());
+    }
+
+    if let ItemsVec::Full(feed_items) = feed.items.unwrap() {
+        json_result!(Result::Ok(feed_items))
+    } else {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "failed to retrieve items"
+        )))
+    }
 }
 
 #[post(
