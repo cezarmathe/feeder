@@ -120,12 +120,78 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
 }
 
 #[post(
-    "/feeds/<_feed_uuid>/items",
+    "/feeds/<feed_uuid>/items",
     format = "application/json",
-    data = "<_feed_item>"
+    data = "<model>"
 )]
-pub fn create_feed_item(_feed_uuid: String, _feed_item: Json<FeedItem>) -> Json<FeedItem> {
-    unimplemented!();
+pub fn create_feed_item(
+    db_conn: FeederDbConn,
+    feed_uuid: String,
+    model: Json<FeedItem>,
+) -> JsonResult<FeedItem> {
+    // Check if the uuids are valid
+    let good_feed_uuid: Uuid;
+    match check_uuid(feed_uuid, SCOPE) {
+        Ok(value) => good_feed_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Check if the feed exists and get its items
+    let mut parent_feed: Feed;
+    match feed::get_feed(db_conn.clone(), good_feed_uuid) {
+        Ok(value) => parent_feed = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Retrieve the uuid list of items from the feed
+    let mut feed_item_uuid_vec: Vec<Uuid>;
+    if let Some(items_vec) = parent_feed.items {
+        match items_vec {
+            ItemsVec::Uuid(vec) => {
+                feed_item_uuid_vec = vec;
+            }
+            ItemsVec::Full(vec) => {
+                feed_item_uuid_vec = Vec::new();
+                for item in vec {
+                    if let Some(value) = item.get_uuid() {
+                        feed_item_uuid_vec.push(value);
+                    }
+                }
+            }
+        }
+    } else {
+        feed_item_uuid_vec = Vec::new();
+    }
+
+    // Save the feed item in the database
+    let feed_item: FeedItem;
+    if let Ok(value) = FeedItem::new(
+        // TODO: actually add the feed item in the database
+        model.title.as_str(),
+        model.link.as_str(),
+        model.description.as_str(),
+    ) {
+        feed_item = value;
+    } else {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            "could not create feed item"
+        )))
+    }
+
+    // Save the feed with the new item added
+    feed_item_uuid_vec.push(feed_item.get_uuid().unwrap()); // FIXME: UNSAFE!!!
+    parent_feed.items = Option::Some(ItemsVec::Uuid(feed_item_uuid_vec));
+    if let Err(e) = feed::update_feed(db_conn.clone(), good_feed_uuid, parent_feed) {
+        let err_msg = format!("{:?}", e);
+        json_result!(Result::Err(create_error!(SCOPE, err_msg)))
+    }
+
+    json_result!(Result::Ok(feed_item))
 }
 
 #[put(
