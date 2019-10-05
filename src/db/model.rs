@@ -178,10 +178,14 @@ pub struct FeedItem {
     pub link: String,
     pub description: String,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub comments: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub enclosure: Option<aux::FeedItemEnclosure>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     checksum: Option<String>,
 }
 
