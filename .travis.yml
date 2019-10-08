@@ -6,18 +6,22 @@ rust:
   - nightly
 cache: cargo
 
+install:
+    - cargo install just
+    - just install-dev-deps
+
 jobs:
   include:
     - stage: build
-      script: cargo build --verbose --release
+      script: just build-release
     - stage: test
-      script: cargo test --verbose --release
+      script: just test
     - stage: docker image development
       if: branch = develop AND type = push
-      script: cargo build --release && ./scripts/docker-image-release.sh develop
-    - stage: binary release
+      script: just docker-image-develop
+    - stage: binary artifact
       if: branch = master AND type = push
-      script: ./scripts/binary-release.sh
+      script: just binary-artifact
     - stage: docker image release
       if: branch = master AND type = push
-      script: ./scripts/docker-image-release.sh release
+      script: just docker-image-release

@@ -1,0 +1,10 @@
+Cargo.lock linguist-generated diff=nodiff
+
+*.md       text
+*.sh       text eol=lf
+*.json     text
+*.toml     text
+*.yml      text
+
+.gitattributes export-ignore
+.gitignore     export-ignore
