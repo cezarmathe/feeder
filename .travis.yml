@@ -7,7 +7,7 @@ rust:
 cache: cargo
 
 install:
-    - ./ci/install_just.sh
+    - nix-env -i just
 
 jobs:
   include:
