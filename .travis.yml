@@ -6,11 +6,8 @@ rust:
   - nightly
 cache: cargo
 
-before_install:
-    sudo apt install nix
-
 install:
-    - nix-env -i just
+    - ./ci/install_just.sh
 
 jobs:
   include:
