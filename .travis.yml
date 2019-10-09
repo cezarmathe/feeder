@@ -7,7 +7,7 @@ rust:
 cache: cargo
 
 install:
-    - cargo install just
+    - ./ci/install_just.sh
 
 jobs:
   include:
