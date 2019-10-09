@@ -1,10 +1,13 @@
 services:
   - docker
-
+sudo: true
 language: rust
 rust:
   - nightly
 cache: cargo
+
+before_install:
+    sudo apt install nix
 
 install:
     - nix-env -i just
