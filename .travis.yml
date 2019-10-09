@@ -8,7 +8,6 @@ cache: cargo
 
 install:
     - cargo install just
-    - just install-dev-deps
 
 jobs:
   include:
