@@ -14,7 +14,7 @@ jobs:
     - stage: build
       script: just build-release
     - stage: test
-      script: just test
+      script: just test-release
     - stage: docker image development
       if: branch = develop AND type = push
       script: just docker-image-develop

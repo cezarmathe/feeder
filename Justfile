@@ -9,6 +9,9 @@ build:
 check:
 	cargo check
 
+test-release: build-release check
+	cargo test --release --verbose
+
 build-release:
 	cargo build --release --verbose
 
