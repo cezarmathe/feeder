@@ -1,5 +1,7 @@
+use super::check_uuid;
+
 use crate::{
-    common::{check_uuid, report::Report, JsonResult},
+    common::{errors::FeedItemsRouterError, report::Report, JsonResult},
     db::{
         feed,
         model::{Feed, FeedItem, ItemsVec},
@@ -47,7 +49,10 @@ pub fn get_feed_item(
         }
     }
     if feed.items.is_none() {
-        json_result!(Result::Err(create_error!(SCOPE, "feed has no items")))
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedItemsRouterError::FeedHasNoItems
+        )))
     }
     let mut feed_item_uuid_vec: Vec<Uuid> = Vec::new();
     match feed.items.unwrap() {
@@ -74,11 +79,13 @@ pub fn get_feed_item(
     }
 
     // Otherwise, return an error
-    let err_msg = format!(
-        "no feed item with uuid {} found for the feed with uuid {}",
-        good_item_uuid, good_item_uuid
-    );
-    json_result!(Result::Err(create_error!(SCOPE, err_msg)))
+    json_result!(Result::Err(create_error!(
+        SCOPE,
+        FeedItemsRouterError::NoFeedItemInFeed {
+            item_uuid: good_item_uuid,
+            feed_uuid: good_feed_uuid,
+        }
+    )))
 }
 
 #[get("/feeds/<feed_uuid>/items")]
@@ -101,7 +108,10 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
         }
     }
     if feed.items.is_none() {
-        json_result!(Result::Err(create_error!(SCOPE, "feed has no items")))
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedItemsRouterError::FeedHasNoItems
+        )))
     }
 
     // If the feed does not contain the full items, retrieve all the items
@@ -114,7 +124,7 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
     } else {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "failed to retrieve items"
+            FeedItemsRouterError::FeedHasNoItems
         )))
     }
 }
@@ -179,16 +189,18 @@ pub fn create_feed_item(
     } else {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "could not create feed item"
+            FeedItemsRouterError::CouldNotCreateFeedItem { feed_item: model.0 }
         )))
     }
 
     // Save the feed with the new item added
     feed_item_uuid_vec.push(feed_item.get_uuid().unwrap()); // FIXME: UNSAFE!!!
     parent_feed.items = Option::Some(ItemsVec::Uuid(feed_item_uuid_vec));
-    if let Err(e) = feed::update_feed(db_conn.clone(), good_feed_uuid, parent_feed) {
-        let err_msg = format!("{:?}", e);
-        json_result!(Result::Err(create_error!(SCOPE, err_msg)))
+    if let Err(e) = feed::update_feed(db_conn.clone(), good_feed_uuid, &parent_feed) {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedItemsRouterError::FailedToUpdateFeed { feed: parent_feed }
+        )))
     }
 
     json_result!(Result::Ok(feed_item))

@@ -1,6 +1,7 @@
-use crate::{common::error::Error, create_error, db::DbConnection};
-
-use std::{option::Option, vec::Vec};
+use crate::{
+    common::errors::{Error, ModelError},
+    db::DbConnection,
+};
 
 use crypto::{digest::Digest, sha3::Sha3};
 use log::*;
@@ -78,11 +79,7 @@ impl Feed {
         // compute the checksum
         if let Some(err) = feed.compute_checksum(Option::None) {
             error!("checksum could not computed");
-            let err_msg = format!(
-                "failed to compute the SHA256 checksum for the feed: {:?}",
-                err
-            );
-            return Result::Err(create_error!(SCOPE, err_msg));
+            return Result::Err(err);
         }
 
         debug!("successfully created feed: {:?}", feed);
@@ -248,12 +245,11 @@ where
 
         Result::Ok(hasher.result_str())
     } else {
-        let err = format!(
-            "cannot create json representation for the model {:?}",
-            model
-        );
-
-        Result::Err(create_error!(SCOPE, err))
+        let model_str = format!("{:?}", model);
+        Result::Err(create_error!(
+            SCOPE,
+            ModelError::FailedToComputeChecksum { model: model_str }
+        ))
     }
 }
 

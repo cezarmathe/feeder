@@ -1,5 +1,3 @@
-use std::option::Option;
-
 use serde::Serialize;
 
 /// Struct that contains a report(for a successful action, unlike feeder::common::error::Error)

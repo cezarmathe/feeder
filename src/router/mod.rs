@@ -3,7 +3,14 @@ mod fairings;
 mod feed_items;
 mod feeds;
 
-use crate::db::FeederDbConn;
+use crate::{
+    common::errors::{Error, UuidError},
+    db::FeederDbConn,
+};
+
+use std::str::FromStr;
+
+use uuid::Uuid;
 
 const SCOPE: &str = "router";
 
@@ -28,15 +35,23 @@ pub fn start() {
                 feed_items::delete_feed_item,
             ],
         )
-        .register(catchers![
-            catchers::http_400_bad_request,
-            catchers::http_401_unauthorized,
-            catchers::http_403_forbidden,
-            catchers::http_404_not_found,
-            catchers::http_406_not_acceptable,
-            catchers::http_500_internal_server_error,
-            catchers::http_501_not_implemented,
-            catchers::http_503_service_unavailable,
-        ])
+        // .register(catchers![
+        //     catchers::http_400_bad_request,
+        //     catchers::http_401_unauthorized,
+        //     catchers::http_403_forbidden,
+        //     catchers::http_404_not_found,
+        //     catchers::http_406_not_acceptable,
+        //     catchers::http_500_internal_server_error,
+        //     catchers::http_501_not_implemented,
+        //     catchers::http_503_service_unavailable,
+        // ])
         .launch();
+}
+
+/// Check an Uuid
+fn check_uuid(uuid: String, scope: &str) -> Result<Uuid, Error> {
+    match Uuid::from_str(uuid.as_str()) {
+        Ok(_value) => Result::Ok(_value),
+        Err(e) => Result::Err(create_error!(scope, UuidError::UuidIsNotValid { uuid })),
+    }
 }

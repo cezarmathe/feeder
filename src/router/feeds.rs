@@ -1,10 +1,10 @@
+use super::check_uuid;
+
 use crate::{
-    common::{check_uuid, report::Report, JsonResult},
+    common::{errors::FeedRouterError, report::Report, JsonResult},
     db::{feed, model::Feed, FeederDbConn},
     json_result,
 };
-
-use std::{option::Option, result::Result, vec::Vec};
 
 use log::*;
 use rocket_contrib::json::Json;
@@ -85,19 +85,19 @@ pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed>
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "model does not have a title"
+            FeedRouterError::ModelHasNoTitle { model: model.0 }
         )))
     }
     if model.description.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "model does not have a description"
+            FeedRouterError::ModelHasNoDescription { model: model.0 }
         )))
     }
     if model.link.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "model does not have a link"
+            FeedRouterError::ModelHasNoLink { model: model.0 }
         )))
     }
 
@@ -119,23 +119,23 @@ pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> Js
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "model does not have a title"
+            FeedRouterError::ModelHasNoTitle { model: model.0 }
         )))
     }
     if model.description.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "model does not have a description"
+            FeedRouterError::ModelHasNoDescription { model: model.0 }
         )))
     }
     if model.link.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            "model does not have a link"
+            FeedRouterError::ModelHasNoLink { model: model.0 }
         )))
     }
 
-    json_result!(feed::update_feed(db_conn.clone(), good_uuid, model.0))
+    json_result!(feed::update_feed(db_conn.clone(), good_uuid, &model.0))
 }
 
 #[delete("/feeds/<uuid>")]

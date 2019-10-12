@@ -15,6 +15,12 @@ test-release: check
 build-release:
 	cargo build --release --verbose
 
+run: test
+	cargo run
+
+run-release: test-release
+	cargo run --release
+
 clean:
 	cargo clean
 

@@ -1,11 +1,12 @@
 use crate::{
-    common::{error::Error, report::Report},
+    common::{
+        errors::{Error, FeedDbError},
+        report::Report,
+    },
     create_error, option_to_result,
 };
 
 use super::model::Feed;
-
-use std::{option::Option, vec::Vec};
 
 use log::*;
 use uuid::Uuid;
@@ -34,10 +35,7 @@ pub fn create_new_feed(db_conn: super::DbConnection, model: Feed) -> Result<Feed
         }
         Err(e) => {
             warn!("could not save feed: {:?} | in the database: {:?}", feed, e);
-            Result::Err(create_error!(
-                SCOPE,
-                "error occurred when saving the feed in the database"
-            ))
+            Result::Err(create_error!(SCOPE, FeedDbError::FailedToSaveFeed { feed }))
         }
     }
 }
@@ -53,10 +51,7 @@ pub fn get_feeds(db_conn: super::DbConnection) -> Result<Vec<Feed>, Error> {
         }
         Err(e) => {
             warn!("the database did not return any feeds: {:?}", e);
-            Result::Err(create_error!(
-                SCOPE,
-                "the database could not return any feed"
-            ))
+            Result::Err(create_error!(SCOPE, FeedDbError::FailedToGetFeeds))
         }
     }
 }
@@ -79,10 +74,7 @@ pub fn get_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Feed, Error>
         }
     }
 
-    Result::Err(create_error!(
-        SCOPE,
-        format!("did not find any feeds with the UUID {}", uuid)
-    ))
+    Result::Err(create_error!(SCOPE, FeedDbError::NoFeedFound { uuid }))
 }
 
 /// Get the checksum for a feed, based on its uuid
@@ -91,12 +83,15 @@ pub fn get_feed_checksum(db_conn: super::DbConnection, uuid: Uuid) -> Result<Str
 
     let feed: Feed = get_feed(db_conn, uuid)?;
 
-    let err_msg: String = format!("feed with uuid {} does not have a checksum", uuid);
-    option_to_result!(feed.get_checksum(), SCOPE, err_msg)
+    option_to_result!(
+        feed.get_checksum(),
+        SCOPE,
+        FeedDbError::FeedHasNoChecksum { feed }
+    )
 }
 
 /// Update the contents of a feed, based on its uuid
-pub fn update_feed(db_conn: super::DbConnection, uuid: Uuid, model: Feed) -> Result<Feed, Error> {
+pub fn update_feed(db_conn: super::DbConnection, uuid: Uuid, model: &Feed) -> Result<Feed, Error> {
     debug!("update_feed requested with feed model: {:?}", model);
 
     let prev_feed = get_feed(db_conn.clone(), uuid)?;
@@ -112,7 +107,10 @@ pub fn delete_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Report<St
             "{}",
             format!("failed to delete the feed with the uuid {}: {:?}", uuid, e)
         );
-        return Result::Err(create_error!(SCOPE, "failed to delete the feed"));
+        return Result::Err(create_error!(
+            SCOPE,
+            FeedDbError::FailedToDeleteFeed { feed: prev_feed }
+        ));
     }
 
     Result::Ok(Report::new(SCOPE.to_string(), "success".to_string()))

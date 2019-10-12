@@ -1,16 +1,12 @@
-pub mod error;
+pub mod errors;
 pub mod report;
 
-use std::{
-    str::FromStr,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use rocket_contrib::json::Json;
-use uuid::Uuid;
 
 /// Type that makes it easier to represent a Json result
-pub type JsonResult<T> = Result<Json<T>, Json<error::Error>>;
+pub type JsonResult<T> = Result<Json<T>, Json<errors::Error>>;
 
 /// Match a Result<T, E> and return a Result<Json<T>, Json<E>>.
 #[macro_export]
@@ -26,26 +22,62 @@ macro_rules! json_result {
 /// Unwrap an Option into a Result
 #[macro_export]
 macro_rules! option_to_result {
-    ($opt: expr, $scope: ident, $message: ident) => {
+    ($opt: expr, $scope: ident, $error: expr) => {
         match $opt {
             Some(_value) => {
                 return std::result::Result::Ok(_value);
             }
             None => {
-                let err: crate::common::error::Error;
-                err = create_error!($scope, $message);
+                let err: crate::common::errors::Error;
+                err = crate::common::errors::Error::new(
+                    std::string::String::from($scope),
+                    Box::new($error),
+                );
                 return std::result::Result::Err(err);
             }
         };
     };
-    ($opt: expr, $scope: ident, $message: literal) => {
+    ($opt: expr, $scope: ident, $error: ident) => {
         match $opt {
             Some(_value) => {
                 return std::result::Result::Ok(_value);
             }
             None => {
-                let err: crate::common::error::Error;
-                err = create_error!($scope, $message);
+                let err: crate::common::errors::Error;
+                err = crate::common::errors::Error::new(
+                    std::string::String::from($scope),
+                    Box::new($error),
+                );
+                return std::result::Result::Err(err);
+            }
+        };
+    };
+    ($opt: expr, $scope: literal, $error: expr) => {
+        match $opt {
+            Some(_value) => {
+                return std::result::Result::Ok(_value);
+            }
+            None => {
+                let err: crate::common::errors::Error;
+                err = crate::common::errors::Error::new(
+                    std::string::String::from($scope),
+                    Box::new($error),
+                );
+                return std::result::Result::Err(err);
+            }
+        };
+    };
+    ($opt: expr, $scope: literal, $error: ident) => {
+        match $opt {
+            Some(_value) => {
+                return std::result::Result::Ok(_value);
+            }
+            None => {
+                let err: crate::common::errors::Error;
+                err = crate::common::errors::Error::new(
+                    std::string::String::from($scope),
+                    Box::new($error),
+                );
                 return std::result::Result::Err(err);
             }
         };
@@ -55,29 +87,17 @@ macro_rules! option_to_result {
 /// Create a new error using a scope and a message.
 #[macro_export]
 macro_rules! create_error {
-    ($scope: ident, $message: literal) => {
-        crate::common::error::Error::new(
-            std::string::String::from($scope),
-            std::string::String::from($message),
-        )
+    ($scope: ident, $error: ident) => {
+        crate::common::errors::Error::new(String::from($scope), Box::new($error))
     };
-    ($scope: ident, $message: expr) => {
-        crate::common::error::Error::new(
-            std::string::String::from($scope),
-            std::string::String::from($message),
-        )
+    ($scope: literal, $error: ident) => {
+        crate::common::errors::Error::new(String::from($scope), Box::new($error))
     };
-    ($scope: literal, $message: literal) => {
-        crate::common::error::Error::new(
-            std::string::String::from($scope),
-            std::string::String::from($message),
-        )
+    ($scope: ident, $error: expr) => {
+        crate::common::errors::Error::new(String::from($scope), Box::new($error))
     };
-    ($scope: literal, $message: expr) => {
-        crate::common::error::Error::new(
-            std::string::String::from($scope),
-            std::string::String::from($message),
-        )
+    ($scope: literal, $error: expr) => {
+        crate::common::errors::Error::new(String::from($scope), Box::new($error))
     };
 }
 
@@ -88,16 +108,6 @@ fn timestamp() -> u64 {
         Err(e) => {
             // extremely bad if happens
             panic!(e);
-        }
-    }
-}
-
-pub fn check_uuid(uuid: String, scope: &str) -> Result<Uuid, error::Error> {
-    match Uuid::from_str(uuid.as_str()) {
-        Ok(_value) => Result::Ok(_value),
-        Err(e) => {
-            let err_msg = format!("uuid is not valid: {:?}", e);
-            Result::Err(create_error!(scope, err_msg))
         }
     }
 }
