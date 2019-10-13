@@ -193,9 +193,16 @@ pub fn create_feed_item(
         )))
     }
 
-    // Save the feed with the new item added
+    // Add the feed item in the feed
     feed_item_uuid_vec.push(feed_item.get_uuid().unwrap()); // FIXME: UNSAFE!!!
     parent_feed.items = Option::Some(ItemsVec::Uuid(feed_item_uuid_vec));
+
+    // Update the feed's checksum
+    if let Some(value) = parent_feed.compute_checksum(Option::Some(db_conn.clone())) {
+        json_result!(Result::Err(value));
+    }
+
+    // Update the feed in the database
     if let Err(e) = feed::update_feed(db_conn.clone(), good_feed_uuid, &parent_feed) {
         json_result!(Result::Err(create_error!(
             SCOPE,

@@ -9,14 +9,17 @@ build:
 check:
 	cargo check
 
-test-release: check
+run: test
+	cargo run
+
+test-release: check-release
 	cargo test --release --verbose
 
 build-release:
 	cargo build --release --verbose
 
-run: test
-	cargo run
+check-release:
+	cargo check --release --verbose
 
 run-release: test-release
 	cargo run --release
