@@ -42,7 +42,7 @@ pub fn get_feed_item(
 
     // Check if the feed exists and get its feed items uuids
     let feed: Feed;
-    match feed::get_feed(db_conn.clone(), good_feed_uuid) {
+    match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
@@ -98,7 +98,7 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
 
     // Check if the feed exists and get its items
     let mut feed: Feed;
-    match feed::get_feed(db_conn.clone(), good_feed_uuid) {
+    match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
@@ -147,7 +147,7 @@ pub fn create_feed_item(
 
     // Check if the feed exists and get its items
     let mut parent_feed: Feed;
-    match feed::get_feed(db_conn.clone(), good_feed_uuid) {
+    match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
         Ok(value) => parent_feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
@@ -200,7 +200,7 @@ pub fn create_feed_item(
     }
 
     // Update the feed in the database
-    if let Err(e) = feed::update_feed(db_conn.clone(), good_feed_uuid, &parent_feed) {
+    if let Err(e) = feed::update_feed(db_conn.clone(), &good_feed_uuid, &parent_feed) {
         json_result!(Result::Err(e))
     }
 
