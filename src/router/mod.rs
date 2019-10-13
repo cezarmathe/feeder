@@ -25,6 +25,7 @@ pub fn start() {
                 feeds::get_feed_checksum,
                 feeds::create_feed,
                 feeds::update_feed,
+                feeds::update_feed_2,
                 feeds::delete_feed,
                 feed_items::get_feed_item,
                 feed_items::get_feed_items,

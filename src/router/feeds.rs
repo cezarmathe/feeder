@@ -129,6 +129,24 @@ pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> Js
     json_result!(feed::update_feed(db_conn.clone(), &good_uuid, model.0))
 }
 
+#[put("/feeds", format = "application/json", data = "<model>")]
+pub fn update_feed_2(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed> {
+    if let None = &model.0.get_uuid() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedRouterError::ModelHasNoUuid
+        )))
+    }
+
+    check_feed_model(&model.0)?;
+
+    json_result!(feed::update_feed(
+        db_conn.clone(),
+        &model.0.get_uuid().unwrap(),
+        model.0
+    ))
+}
+
 #[delete("/feeds/<uuid>")]
 pub fn delete_feed(db_conn: FeederDbConn, uuid: String) -> JsonResult<Report<String>> {
     match check_uuid(uuid, SCOPE) {

@@ -30,6 +30,8 @@ pub enum FeedRouterError {
     ModelHasNoDescription,
     #[error("model has no link")]
     ModelHasNoLink,
+    #[error("model has no uuid")]
+    ModelHasNoUuid,
 }
 
 /// Errors that can be produced by the feed items router
