@@ -80,6 +80,9 @@ pub enum FeedDbError {
     FailedToUpdateFeed,
 }
 
+/// Errors that can be produced by the feed item db
+pub enum FeedItemDbError {}
+
 /// Errors that can be produced by Rocket catchers
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum HttpError {
