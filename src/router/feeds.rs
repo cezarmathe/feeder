@@ -126,7 +126,7 @@ pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> Js
 
     check_feed_model(&model.0)?;
 
-    json_result!(feed::update_feed(db_conn.clone(), good_uuid, &model.0))
+    json_result!(feed::update_feed(db_conn.clone(), &good_uuid, &model.0))
 }
 
 #[delete("/feeds/<uuid>")]
