@@ -78,7 +78,7 @@ pub fn get_feed(db_conn: super::DbConnection, uuid: &Uuid) -> Result<Feed, Error
 }
 
 /// Get the checksum for a feed, based on its uuid
-pub fn get_feed_checksum(db_conn: super::DbConnection, uuid: Uuid) -> Result<String, Error> {
+pub fn get_feed_checksum(db_conn: super::DbConnection, uuid: &Uuid) -> Result<String, Error> {
     debug!("get_feed_checksum requested with uuid: {}", uuid);
 
     let feed: Feed = get_feed(db_conn, uuid)?;

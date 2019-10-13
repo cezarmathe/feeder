@@ -101,7 +101,7 @@ pub fn get_feeds(db_conn: FeederDbConn, with_items: Option<bool>) -> JsonResult<
 #[get("/feeds/<uuid>/checksum")]
 pub fn get_feed_checksum(db_conn: FeederDbConn, uuid: String) -> JsonResult<String> {
     match check_uuid(uuid, SCOPE) {
-        Ok(_value) => json_result!(feed::get_feed_checksum(db_conn.clone(), _value)),
+        Ok(value) => json_result!(feed::get_feed_checksum(db_conn.clone(), &value)),
         Err(e) => json_result!(Result::Err(e)),
     }
 }
