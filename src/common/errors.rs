@@ -46,8 +46,8 @@ pub enum FeedItemsRouterError {
     FailedToRetrieveItems { feed_uuid: Uuid },
     #[error("could not create feed item: {feed_item:?}")]
     CouldNotCreateFeedItem { feed_item: FeedItem },
-    #[error("failed to update feed {feed:?} after doing an operation on feed items")]
-    FailedToUpdateFeed { feed: Feed },
+    // #[error("failed to update feed {feed:?} after doing an operation on feed items")]
+    // FailedToUpdateFeed { feed: Feed },
 }
 
 /// Errors that can be produced by uuid checking
