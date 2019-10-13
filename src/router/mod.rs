@@ -35,16 +35,16 @@ pub fn start() {
                 feed_items::delete_feed_item,
             ],
         )
-        // .register(catchers![
-        //     catchers::http_400_bad_request,
-        //     catchers::http_401_unauthorized,
-        //     catchers::http_403_forbidden,
-        //     catchers::http_404_not_found,
-        //     catchers::http_406_not_acceptable,
-        //     catchers::http_500_internal_server_error,
-        //     catchers::http_501_not_implemented,
-        //     catchers::http_503_service_unavailable,
-        // ])
+        .register(catchers![
+            catchers::http_400_bad_request,
+            catchers::http_401_unauthorized,
+            catchers::http_403_forbidden,
+            catchers::http_404_not_found,
+            catchers::http_406_not_acceptable,
+            catchers::http_500_internal_server_error,
+            catchers::http_501_not_implemented,
+            catchers::http_503_service_unavailable,
+        ])
         .launch();
 }
 

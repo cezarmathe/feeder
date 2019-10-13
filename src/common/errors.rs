@@ -78,3 +78,24 @@ pub enum FeedDbError {
     #[error("failed to delete feed {feed:?}")]
     FailedToDeleteFeed { feed: Feed },
 }
+
+/// Errors that can be produced by Rocket catchers
+#[derive(Clone, Debug, Deserialize, Error, Serialize)]
+pub enum HttpError {
+    #[error("bad request")]
+    BadRequest,
+    #[error("unauthorized")]
+    Unauthorized,
+    #[error("forbidden")]
+    Forbidden,
+    #[error("not found")]
+    NotFound,
+    #[error("not acceptable")]
+    NotAcceptable,
+    #[error("internal server error")]
+    Ise,
+    #[error("not implemented")]
+    NotImplemented,
+    #[error("service unavailable")]
+    ServiceUnavailable,
+}
