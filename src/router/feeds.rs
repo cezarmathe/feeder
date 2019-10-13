@@ -110,7 +110,7 @@ pub fn get_feed_checksum(db_conn: FeederDbConn, uuid: String) -> JsonResult<Stri
 pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed> {
     check_feed_model(&model.0)?;
 
-    json_result!(feed::create_new_feed(db_conn.clone(), model.0))
+    json_result!(feed::create_new_feed(db_conn.clone(), &model.0))
 }
 
 #[put("/feeds/<uuid>", format = "application/json", data = "<model>")]

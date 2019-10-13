@@ -15,14 +15,14 @@ use wither::prelude::*;
 const SCOPE: &str = "database/feed";
 
 /// Create a new feed in the database
-pub fn create_new_feed(db_conn: super::DbConnection, model: Feed) -> Result<Feed, Error> {
+pub fn create_new_feed(db_conn: super::DbConnection, model: &Feed) -> Result<Feed, Error> {
     debug!("create_new_feed requested with model: {:?}", model);
 
     debug!("creating feed from model data");
     let mut feed: Feed = Feed::new(
-        model.title.unwrap().as_str(),
-        model.description.unwrap().as_str(),
-        model.link.unwrap().as_str(),
+        model.title.as_ref().unwrap().as_str(),
+        model.description.as_ref().unwrap().as_str(),
+        model.link.as_ref().unwrap().as_str(),
     )?;
 
     match feed.save(db_conn.clone(), Option::None) {
