@@ -50,6 +50,11 @@ pub fn start() {
 fn check_uuid(uuid: String, scope: &str) -> Result<Uuid, Error> {
     match Uuid::from_str(uuid.as_str()) {
         Ok(_value) => Result::Ok(_value),
-        Err(e) => Result::Err(create_error!(scope, UuidError::UuidIsNotValid { uuid })),
+        Err(e) => Result::Err(create_error!(
+            scope,
+            UuidError::UuidIsNotValid {
+                err: format!("{:?}", e)
+            }
+        )),
     }
 }

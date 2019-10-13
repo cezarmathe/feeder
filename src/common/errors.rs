@@ -53,8 +53,8 @@ pub enum FeedItemsRouterError {
 /// Errors that can be produced by uuid checking
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum UuidError {
-    #[error("invalid uuid: {uuid}")]
-    UuidIsNotValid { uuid: String },
+    #[error("invalid uuid: {err}")]
+    UuidIsNotValid { err: String },
 }
 
 /// Errors that can be produced by db models
