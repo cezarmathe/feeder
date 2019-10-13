@@ -81,10 +81,7 @@ pub fn get_feed_item(
     // Otherwise, return an error
     json_result!(Result::Err(create_error!(
         SCOPE,
-        FeedItemsRouterError::NoFeedItemInFeed {
-            item_uuid: good_item_uuid,
-            feed_uuid: good_feed_uuid,
-        }
+        FeedItemsRouterError::NoFeedItemInFeed
     )))
 }
 
@@ -189,7 +186,7 @@ pub fn create_feed_item(
     } else {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedItemsRouterError::CouldNotCreateFeedItem { feed_item: model.0 }
+            FeedItemsRouterError::CouldNotCreateFeedItem
         )))
     }
 

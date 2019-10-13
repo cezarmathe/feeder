@@ -85,19 +85,19 @@ pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed>
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoTitle { model: model.0 }
+            FeedRouterError::ModelHasNoTitle
         )))
     }
     if model.description.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoDescription { model: model.0 }
+            FeedRouterError::ModelHasNoDescription
         )))
     }
     if model.link.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoLink { model: model.0 }
+            FeedRouterError::ModelHasNoLink
         )))
     }
 
@@ -119,19 +119,19 @@ pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> Js
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoTitle { model: model.0 }
+            FeedRouterError::ModelHasNoTitle
         )))
     }
     if model.description.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoDescription { model: model.0 }
+            FeedRouterError::ModelHasNoDescription
         )))
     }
     if model.link.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoLink { model: model.0 }
+            FeedRouterError::ModelHasNoLink
         )))
     }
 

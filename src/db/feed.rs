@@ -35,7 +35,7 @@ pub fn create_new_feed(db_conn: super::DbConnection, model: Feed) -> Result<Feed
         }
         Err(e) => {
             warn!("could not save feed: {:?} | in the database: {:?}", feed, e);
-            Result::Err(create_error!(SCOPE, FeedDbError::FailedToSaveFeed { feed }))
+            Result::Err(create_error!(SCOPE, FeedDbError::FailedToSaveFeed))
         }
     }
 }
@@ -74,7 +74,7 @@ pub fn get_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Feed, Error>
         }
     }
 
-    Result::Err(create_error!(SCOPE, FeedDbError::NoFeedFound { uuid }))
+    Result::Err(create_error!(SCOPE, FeedDbError::NoFeedFound))
 }
 
 /// Get the checksum for a feed, based on its uuid
@@ -83,11 +83,7 @@ pub fn get_feed_checksum(db_conn: super::DbConnection, uuid: Uuid) -> Result<Str
 
     let feed: Feed = get_feed(db_conn, uuid)?;
 
-    option_to_result!(
-        feed.get_checksum(),
-        SCOPE,
-        FeedDbError::FeedHasNoChecksum { feed }
-    )
+    option_to_result!(feed.get_checksum(), SCOPE, FeedDbError::FeedHasNoChecksum)
 }
 
 /// Update the contents of a feed, based on its uuid
@@ -107,10 +103,7 @@ pub fn delete_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Report<St
             "{}",
             format!("failed to delete the feed with the uuid {}: {:?}", uuid, e)
         );
-        return Result::Err(create_error!(
-            SCOPE,
-            FeedDbError::FailedToDeleteFeed { feed: prev_feed }
-        ));
+        return Result::Err(create_error!(SCOPE, FeedDbError::FailedToDeleteFeed));
     }
 
     Result::Ok(Report::new(SCOPE.to_string(), "success".to_string()))

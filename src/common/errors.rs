@@ -1,9 +1,6 @@
-use crate::db::model::*;
-
 use std::boxed::Box;
 
 use thiserror::Error;
-use uuid::Uuid;
 
 /// Error struct used by feeder
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -27,12 +24,12 @@ impl Error {
 /// Errors that can be produced by the feed router
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum FeedRouterError {
-    #[error("model has no title: {model:?}")]
-    ModelHasNoTitle { model: Feed },
-    #[error("model has no description: {model:?}")]
-    ModelHasNoDescription { model: Feed },
-    #[error("model has no link: {model:?}")]
-    ModelHasNoLink { model: Feed },
+    #[error("model has no title")]
+    ModelHasNoTitle,
+    #[error("model has no description")]
+    ModelHasNoDescription,
+    #[error("model has no link")]
+    ModelHasNoLink,
 }
 
 /// Errors that can be produced by the feed items router
@@ -40,12 +37,12 @@ pub enum FeedRouterError {
 pub enum FeedItemsRouterError {
     #[error("feed has no items")]
     FeedHasNoItems,
-    #[error("no feed item with the uuid {item_uuid} found in the feed with uuid {feed_uuid}")]
-    NoFeedItemInFeed { item_uuid: Uuid, feed_uuid: Uuid },
-    #[error("failed to retrieve items from the feed with uuid {feed_uuid}")]
-    FailedToRetrieveItems { feed_uuid: Uuid },
-    #[error("could not create feed item: {feed_item:?}")]
-    CouldNotCreateFeedItem { feed_item: FeedItem },
+    #[error("no feed item found")]
+    NoFeedItemInFeed,
+    #[error("failed to retrieve the items from the feed")]
+    FailedToRetrieveItems,
+    #[error("could not create the feed item")]
+    CouldNotCreateFeedItem,
     // #[error("failed to update feed {feed:?} after doing an operation on feed items")]
     // FailedToUpdateFeed { feed: Feed },
 }
@@ -54,29 +51,29 @@ pub enum FeedItemsRouterError {
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum UuidError {
     #[error("invalid uuid: {err}")]
-    UuidIsNotValid { err: String },
+    UuidNotValid { err: String },
 }
 
 /// Errors that can be produced by db models
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum ModelError {
-    #[error("failed to compute checksum for model: {model}")]
-    FailedToComputeChecksum { model: String },
+    #[error("failed to compute the checksum")]
+    FailedToComputeChecksum,
 }
 
 /// Errors that can be produced by the feed db
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum FeedDbError {
-    #[error("failed to save the feed {feed:?} in the database")]
-    FailedToSaveFeed { feed: Feed },
-    #[error("failed to get feeds from the database")]
+    #[error("failed to save the feed in the database")]
+    FailedToSaveFeed,
+    #[error("failed to get the feeds from the database")]
     FailedToGetFeeds,
-    #[error("no feed found with the uuid {uuid}")]
-    NoFeedFound { uuid: Uuid },
-    #[error("feed {feed:?} has no checksum")]
-    FeedHasNoChecksum { feed: Feed },
-    #[error("failed to delete feed {feed:?}")]
-    FailedToDeleteFeed { feed: Feed },
+    #[error("no feed found")]
+    NoFeedFound,
+    #[error("feed has no checksum")]
+    FeedHasNoChecksum,
+    #[error("failed to delete the feed")]
+    FailedToDeleteFeed,
 }
 
 /// Errors that can be produced by Rocket catchers

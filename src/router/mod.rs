@@ -52,7 +52,7 @@ fn check_uuid(uuid: String, scope: &str) -> Result<Uuid, Error> {
         Ok(_value) => Result::Ok(_value),
         Err(e) => Result::Err(create_error!(
             scope,
-            UuidError::UuidIsNotValid {
+            UuidError::UuidNotValid {
                 err: format!("{:?}", e)
             }
         )),
