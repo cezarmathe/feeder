@@ -1,7 +1,11 @@
 use super::check_uuid;
 
 use crate::{
-    common::{errors::FeedRouterError, report::Report, JsonResult},
+    common::{
+        errors::{Error, FeedRouterError},
+        report::Report,
+        JsonResult,
+    },
     db::{feed, model::Feed, FeederDbConn},
     json_result,
 };
@@ -11,6 +15,29 @@ use rocket_contrib::json::Json;
 use uuid::Uuid;
 
 const SCOPE: &str = "router/feeds";
+
+/// Check a feed model used by create_feed and update_feed
+fn check_feed_model(model: &Feed) -> Result<(), Json<Error>> {
+    if model.title.is_none() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedRouterError::ModelHasNoTitle
+        )))
+    }
+    if model.description.is_none() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedRouterError::ModelHasNoDescription
+        )))
+    }
+    if model.link.is_none() {
+        json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedRouterError::ModelHasNoLink
+        )))
+    }
+    Result::Ok(())
+}
 
 #[get("/feeds/<uuid>?<with_items>")]
 pub fn get_feed(db_conn: FeederDbConn, uuid: String, with_items: Option<bool>) -> JsonResult<Feed> {
@@ -81,25 +108,7 @@ pub fn get_feed_checksum(db_conn: FeederDbConn, uuid: String) -> JsonResult<Stri
 
 #[post("/feeds", format = "application/json", data = "<model>")]
 pub fn create_feed(db_conn: FeederDbConn, model: Json<Feed>) -> JsonResult<Feed> {
-    // Filter out bad models
-    if model.title.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedRouterError::ModelHasNoTitle
-        )))
-    }
-    if model.description.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedRouterError::ModelHasNoDescription
-        )))
-    }
-    if model.link.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedRouterError::ModelHasNoLink
-        )))
-    }
+    check_feed_model(&model.0)?;
 
     json_result!(feed::create_new_feed(db_conn.clone(), model.0))
 }
@@ -115,25 +124,7 @@ pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> Js
         }
     }
 
-    // Filter out bad models
-    if model.title.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedRouterError::ModelHasNoTitle
-        )))
-    }
-    if model.description.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedRouterError::ModelHasNoDescription
-        )))
-    }
-    if model.link.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedRouterError::ModelHasNoLink
-        )))
-    }
+    check_feed_model(&model.0)?;
 
     json_result!(feed::update_feed(db_conn.clone(), good_uuid, &model.0))
 }
