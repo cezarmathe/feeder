@@ -245,7 +245,6 @@ where
 
         Result::Ok(hasher.result_str())
     } else {
-        let model_str = format!("{:?}", model);
         Result::Err(create_error!(SCOPE, ModelError::FailedToComputeChecksum))
     }
 }
