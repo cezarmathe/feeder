@@ -68,7 +68,7 @@ pub fn get_feed(db_conn: FeederDbConn, uuid: String, with_items: Option<bool>) -
     }
 
     debug!("feed requested with items");
-    feed.with_items(db_conn.clone());
+    feed.with_items(&db_conn.0);
     json_result!(Result::Ok(feed))
 }
 
@@ -92,7 +92,7 @@ pub fn get_feeds(db_conn: FeederDbConn, with_items: Option<bool>) -> JsonResult<
     debug!("feeds requested with items");
     // Get the feed items for each individual feed
     for feed in &mut feeds {
-        feed.with_items(db_conn.clone());
+        feed.with_items(&db_conn.0);
     }
 
     json_result!(Result::Ok(feeds))

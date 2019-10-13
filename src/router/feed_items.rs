@@ -41,7 +41,7 @@ pub fn get_feed_item(
     }
 
     // Check if the feed exists and get its feed items uuids
-    let feed: Feed;
+    let mut feed: Feed;
     match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
@@ -54,27 +54,27 @@ pub fn get_feed_item(
             FeedItemsRouterError::FeedHasNoItems
         )))
     }
-    let mut feed_item_uuid_vec: Vec<Uuid> = Vec::new();
+
+    // If the feeds only contain the uuid, get the full items
+    if let ItemsVec::Uuid(_) = feed.items.as_ref().unwrap() {
+        feed.with_items(&db_conn.0);
+    }
+
+    let feed_items: Vec<FeedItem>;
     match feed.items.unwrap() {
-        ItemsVec::Uuid(uuid_vec) => {
-            for item_uuid in uuid_vec {
-                feed_item_uuid_vec.push(item_uuid);
-            }
-        }
-        ItemsVec::Full(item_vec) => {
-            for item in item_vec {
-                if let Some(value) = item.get_uuid() {
-                    feed_item_uuid_vec.push(value);
-                }
-            }
-        }
+        ItemsVec::Full(items) => feed_items = items,
+        ItemsVec::Uuid(_) => json_result!(Result::Err(create_error!(
+            SCOPE,
+            FeedItemsRouterError::FailedToGetFeedWithItems
+        ))),
     }
 
     // Check if the feed has a feed item with this uuid
-    for item_uuid in feed_item_uuid_vec {
-        if item_uuid == good_item_uuid {
-            // TODO: get the actual feed item from the database
-            json_result!(FeedItem::new("a", "b", "c"))
+    for item in feed_items {
+        if let Some(uuid) = item.get_uuid() {
+            if uuid == good_item_uuid {
+                json_result!(Result::Ok(item))
+            }
         }
     }
 
@@ -112,8 +112,8 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
     }
 
     // If the feed does not contain the full items, retrieve all the items
-    if let ItemsVec::Uuid(_) = feed.items.clone().unwrap() {
-        feed.with_items(db_conn.clone());
+    if let ItemsVec::Uuid(_) = feed.items.as_ref().unwrap() {
+        feed.with_items(&db_conn.0);
     }
 
     if let ItemsVec::Full(feed_items) = feed.items.unwrap() {

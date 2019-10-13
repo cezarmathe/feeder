@@ -1,6 +1,6 @@
 use crate::{
     common::errors::{Error, ModelError},
-    db::DbConnection,
+    db::{feed_item, DbConnection},
 };
 
 use crypto::{digest::Digest, sha3::Sha3};
@@ -27,7 +27,9 @@ pub struct Feed {
         skip_serializing
     )]
     id: Option<ObjectId>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[model(index(index = "asc", unique = "true"))]
     uuid: Option<Uuid>,
 
     pub title: Option<String>,
@@ -102,7 +104,7 @@ impl Feed {
         debug!("computing checksum for feed {:?}", self);
 
         if let Some(value) = db_conn {
-            self.with_items(value)
+            return self.with_items(&value);
         }
 
         match compute_checksum(self) {
@@ -115,28 +117,30 @@ impl Feed {
     }
 
     /// Return this feed along with its items
-    pub fn with_items(&mut self, _db_conn: DbConnection) {
+    pub fn with_items(&mut self, db_conn: &DbConnection) -> Option<Error> {
         if self.items.is_none() {
-            return;
+            return Option::None;
         }
 
-        // let items_vec: ItemsVec = self.clone().items.unwrap();
-        // match items_vec {
-        //     ItemsVec::Full(_) => self,
-        //     ItemsVec::Uuid(_items) => {
-        //         //                let mut items_full: Vec<FeedItem> = Vec::new();
+        match self.items.as_ref().unwrap() {
+            ItemsVec::Full(_) => Option::None,
+            ItemsVec::Uuid(items_uuid) => {
+                let mut items_full: Vec<FeedItem> = Vec::new();
 
-        //         //                for item in items {
-        //         //
-        //         //                }
-        //     }
-        // }
+                for item_uuid in items_uuid {
+                    match feed_item::get_feed_item(db_conn, self, &item_uuid) {
+                        Ok(item) => items_full.push(item),
+                        Err(e) => return Option::Some(e),
+                    }
+                }
+
+                Option::None
+            }
+        }
     }
 
     /// Return this feed with the items having only uuids
     pub fn with_uuids(&mut self) {
-        // TODO add some kind of error returning
-
         // If there are no items to be converted, return
         if self.items.is_none() {
             return;
@@ -157,7 +161,7 @@ impl Feed {
 
                 self.items = Option::Some(ItemsVec::Uuid(items_uuid));
             }
-        };
+        }
     }
 
     /// Generate the RSS representation of this feed.

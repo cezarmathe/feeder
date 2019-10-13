@@ -47,6 +47,8 @@ pub enum FeedItemsRouterError {
     CouldNotCreateFeedItem,
     // #[error("failed to update feed {feed:?} after doing an operation on feed items")]
     // FailedToUpdateFeed { feed: Feed },
+    #[error("failed to get the feed with items")]
+    FailedToGetFeedWithItems,
 }
 
 /// Errors that can be produced by uuid checking
@@ -61,6 +63,8 @@ pub enum UuidError {
 pub enum ModelError {
     #[error("failed to compute the checksum")]
     FailedToComputeChecksum,
+    #[error("model has no items")]
+    NoItems,
 }
 
 /// Errors that can be produced by the feed db
@@ -81,7 +85,13 @@ pub enum FeedDbError {
 }
 
 /// Errors that can be produced by the feed item db
-pub enum FeedItemDbError {}
+#[derive(Clone, Debug, Deserialize, Error, Serialize)]
+pub enum FeedItemDbError {
+    #[error("failed to get the feed items from the database")]
+    FailedToGetItems,
+    #[error("no item found")]
+    NoItemFound,
+}
 
 /// Errors that can be produced by Rocket catchers
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
