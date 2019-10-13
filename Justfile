@@ -1,6 +1,6 @@
 #!/usr/bin/env just --justfile
 
-test: check
+test: build check
 	cargo test
 
 build:
@@ -12,7 +12,7 @@ check:
 run: test
 	cargo run
 
-test-release: check-release
+test-release: build-release check-release
 	cargo test --release --verbose
 
 build-release:
