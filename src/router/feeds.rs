@@ -17,7 +17,7 @@ use uuid::Uuid;
 const SCOPE: &str = "router/feeds";
 
 /// Check a feed model used by create_feed and update_feed
-fn check_feed_model(model: &Feed) -> Result<(), Json<Error>> {
+fn check_feed_model(model: &Feed) -> Result<Json<()>, Json<Error>> {
     if model.title.is_none() {
         json_result!(Result::Err(create_error!(
             SCOPE,
@@ -36,7 +36,7 @@ fn check_feed_model(model: &Feed) -> Result<(), Json<Error>> {
             FeedRouterError::ModelHasNoLink
         )))
     }
-    Result::Ok(())
+    Result::Ok(Json(()))
 }
 
 #[get("/feeds/<uuid>?<with_items>")]
