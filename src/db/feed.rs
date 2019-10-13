@@ -87,11 +87,24 @@ pub fn get_feed_checksum(db_conn: super::DbConnection, uuid: &Uuid) -> Result<St
 }
 
 /// Update the contents of a feed, based on its uuid
-pub fn update_feed(db_conn: super::DbConnection, uuid: &Uuid, model: &Feed) -> Result<Feed, Error> {
+pub fn update_feed(
+    db_conn: super::DbConnection,
+    uuid: &Uuid,
+    mut model: Feed,
+) -> Result<Feed, Error> {
     debug!("update_feed requested with feed model: {:?}", model);
 
     let prev_feed = get_feed(db_conn.clone(), uuid)?;
-    Result::Ok(prev_feed)
+
+    delete_feed(db_conn.clone(), &prev_feed.get_uuid().unwrap())?;
+
+    match model.save(db_conn, Option::None) {
+        Ok(_) => Result::Ok(model),
+        Err(e) => {
+            warn!("{}", e);
+            Result::Err(create_error!(SCOPE, FeedDbError::FailedToUpdateFeed))
+        }
+    }
 }
 
 pub fn delete_feed(db_conn: super::DbConnection, uuid: &Uuid) -> Result<Report<String>, Error> {

@@ -74,6 +74,8 @@ pub enum FeedDbError {
     FeedHasNoChecksum,
     #[error("failed to delete the feed")]
     FailedToDeleteFeed,
+    #[error("failed to update feed")]
+    FailedToUpdateFeed,
 }
 
 /// Errors that can be produced by Rocket catchers
