@@ -3,7 +3,7 @@ use super::check_uuid;
 use crate::{
     common::{errors::FeedItemsRouterError, report::Report, JsonResult},
     db::{
-        feed,
+        feed, feed_item,
         model::{Feed, FeedItem, ItemsVec},
         FeederDbConn,
     },

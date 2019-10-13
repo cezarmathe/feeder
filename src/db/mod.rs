@@ -1,4 +1,5 @@
 pub mod feed;
+pub mod feed_item;
 pub mod model;
 
 use std::sync::Arc;
