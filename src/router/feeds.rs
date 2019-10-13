@@ -132,7 +132,7 @@ pub fn update_feed(db_conn: FeederDbConn, uuid: String, model: Json<Feed>) -> Js
 #[delete("/feeds/<uuid>")]
 pub fn delete_feed(db_conn: FeederDbConn, uuid: String) -> JsonResult<Report<String>> {
     match check_uuid(uuid, SCOPE) {
-        Ok(value) => json_result!(feed::delete_feed(db_conn.clone(), value)),
+        Ok(value) => json_result!(feed::delete_feed(db_conn.clone(), &value)),
         Err(e) => json_result!(Result::Err(e)),
     }
 }

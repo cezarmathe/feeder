@@ -94,7 +94,7 @@ pub fn update_feed(db_conn: super::DbConnection, uuid: &Uuid, model: &Feed) -> R
     Result::Ok(prev_feed)
 }
 
-pub fn delete_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Report<String>, Error> {
+pub fn delete_feed(db_conn: super::DbConnection, uuid: &Uuid) -> Result<Report<String>, Error> {
     debug!("delete_feed requested with uuid {}", uuid);
 
     let prev_feed = get_feed(db_conn.clone(), uuid)?;
