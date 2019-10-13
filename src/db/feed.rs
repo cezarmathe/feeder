@@ -57,7 +57,7 @@ pub fn get_feeds(db_conn: super::DbConnection) -> Result<Vec<Feed>, Error> {
 }
 
 /// Get a feed from the database, based on its uuid
-pub fn get_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Feed, Error> {
+pub fn get_feed(db_conn: super::DbConnection, uuid: &Uuid) -> Result<Feed, Error> {
     debug!("get_feed requested with uuid: {}", uuid);
 
     let feeds: Vec<Feed> = get_feeds(db_conn)?;
@@ -68,7 +68,7 @@ pub fn get_feed(db_conn: super::DbConnection, uuid: Uuid) -> Result<Feed, Error>
             trace!("feed {:?} has no uuid, skipping", feed);
             continue;
         }
-        if feed.get_uuid().unwrap() == uuid {
+        if feed.get_uuid().as_ref().unwrap() == uuid {
             debug!("found a feed: {:?}", feed);
             return Result::Ok(feed);
         }

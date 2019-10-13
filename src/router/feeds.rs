@@ -52,7 +52,7 @@ pub fn get_feed(db_conn: FeederDbConn, uuid: String, with_items: Option<bool>) -
 
     // Get the feed from the database
     let mut feed: Feed;
-    match feed::get_feed(db_conn.clone(), good_uuid) {
+    match feed::get_feed(db_conn.clone(), &good_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
