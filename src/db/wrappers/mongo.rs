@@ -51,12 +51,15 @@ impl FeedWrapper for DbConnection {
     }
 
     fn update_feed(self, feed: model::Feed) -> DbResult<model::Feed> {
+        // FIXME: compute the checksum again
         let update: Document;
-        update = mongodb::to_bson(&feed) // FIXME: error updating the feed: ArgumentError("Update only works with $ operators.")
+        update = doc! {
+            "$set": mongodb::to_bson(&feed)
             .unwrap()
             .as_document()
             .unwrap()
-            .clone(); // FIXME: no unwraps
+            .clone()
+        }; // FIXME: no unwraps
 
         let mut find_and_update_options: mongodb::coll::options::FindOneAndUpdateOptions;
         find_and_update_options = mongodb::coll::options::FindOneAndUpdateOptions::new();
@@ -73,10 +76,7 @@ impl FeedWrapper for DbConnection {
             update,
             Option::Some(find_and_update_options),
         ) {
-            Ok(value) => {
-                warn!("database did not return the updated feed");
-                option_to_result!(value, SCOPE, FeedDbError::FailedToUpdateFeed)
-            }
+            Ok(value) => option_to_result!(value, SCOPE, FeedDbError::FailedToUpdateFeed),
             Err(e) => {
                 warn!("error updating the feed: {:?}", e);
                 Result::Err(create_error!(SCOPE, FeedDbError::FailedToUpdateFeed))
