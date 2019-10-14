@@ -50,8 +50,11 @@ impl FeedWrapper for DbConnection {
         }
     }
 
-    fn update_feed(self, uuid: Uuid, feed: model::Feed) -> DbResult<model::Feed> {
-        // FIXME: compute the checksum again
+    fn update_feed(self, uuid: Uuid, mut feed: model::Feed) -> DbResult<model::Feed> {
+        if let Some(e) = feed.compute_checksum(Option::None) {
+            return Result::Err(e);
+        }
+
         let update: Document;
         update = doc! {
             "$set": mongodb::to_bson(&feed)
