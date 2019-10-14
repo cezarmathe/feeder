@@ -1,11 +1,8 @@
 mod catchers;
-mod feed_items;
+// mod feed_items;
 mod feeds;
 
-use crate::{
-    common::errors::{Error, UuidError},
-    db::FeederDbConn,
-};
+use crate::common::errors::{Error, UuidError};
 
 use std::str::FromStr;
 
@@ -16,7 +13,7 @@ const SCOPE: &str = "router";
 /// Start the router
 pub fn start() {
     rocket::ignite()
-        .attach(FeederDbConn::fairing())
+        .attach(crate::db::DbConnection::fairing())
         .mount(
             "/",
             routes![
@@ -25,13 +22,12 @@ pub fn start() {
                 feeds::get_feed_checksum,
                 feeds::create_feed,
                 feeds::update_feed,
-                feeds::update_feed_2,
                 feeds::delete_feed,
-                feed_items::get_feed_item,
-                feed_items::get_feed_items,
-                feed_items::create_feed_item,
-                feed_items::update_feed_item,
-                feed_items::delete_feed_item,
+                // feed_items::get_feed_item,
+                // feed_items::get_feed_items,
+                // feed_items::create_feed_item,
+                // feed_items::update_feed_item,
+                // feed_items::delete_feed_item,
             ],
         )
         .register(catchers![

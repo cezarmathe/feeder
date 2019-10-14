@@ -1,14 +1,22 @@
-pub mod feed;
-pub mod feed_item;
+pub mod feed_item_wrapper;
+pub mod feed_wrapper;
 pub mod model;
 
-use std::sync::Arc;
+// Mongodb implementation for feeder
+#[cfg(feature = "mongo")]
+pub mod mongo;
 
-use mongodb::db::DatabaseInner;
+use crate::common::DbResult;
 
-/// Struct used for connections to the database
+/// Mongodb implementation imports
+#[cfg(feature = "mongo")]
+use {mongodb::db::DatabaseInner, std::sync::Arc};
+
+pub use feed_item_wrapper::FeedItemWrapper;
+pub use feed_wrapper::FeedWrapper;
+
+/// Mongodb struct used for connections to the database
+#[cfg(feature = "mongo")]
 #[database("feeder")]
-pub struct FeederDbConn(Arc<DatabaseInner>);
-
-/// Abreviation for a database connection struct
-pub type DbConnection = Arc<DatabaseInner>;
+#[derive(Clone)]
+pub struct DbConnection(Arc<DatabaseInner>);

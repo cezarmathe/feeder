@@ -8,6 +8,9 @@ use rocket_contrib::json::Json;
 /// Type that makes it easier to represent a Json result
 pub type JsonResult<T> = Result<Json<T>, Json<errors::Error>>;
 
+/// Type that makes it easier to represent a result returned by feeder functions
+pub type DbResult<T> = Result<T, errors::Error>;
+
 /// Match a Result<T, E> and return a Result<Json<T>, Json<E>>.
 #[macro_export]
 macro_rules! json_result {

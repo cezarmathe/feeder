@@ -3,6 +3,7 @@
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
+#[cfg(feature = "mongo")]
 extern crate mongodb;
 #[macro_use]
 extern crate rocket;
@@ -11,6 +12,7 @@ extern crate rocket_contrib;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use(Model)]
+#[cfg(feature = "mongo")]
 extern crate wither_derive;
 
 #[macro_use]

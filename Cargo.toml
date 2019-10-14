@@ -6,6 +6,11 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["mongo"]
+
+mongo = ["mongodb", "wither", "wither_derive", "bson"]
+
 [dependencies]
 #rocket api framework
 rocket = "0.4.2"
@@ -17,12 +22,6 @@ serde_derive = "1.0.99"
 uuid = { version = "0.7", features = ["serde", "v4"] }
 rust-crypto = "0.2.36"
 
-# db
-mongodb = "0.3.11"
-wither = "0.8.0"
-wither_derive = "0.8.0"
-bson = "0.14.0"
-
 # logging
 simple-logging = "2.0.2"
 log = "0.4.8"
@@ -32,6 +31,12 @@ lazy_static = "1.4.0"
 
 # errors
 thiserror = "1.0"
+
+# optional dependencies
+mongodb = {version = "0.3.11", optional = true}
+wither = {version = "0.8.0", optional = true}
+wither_derive = {version = "0.8.0", optional = true}
+bson = {version = "0.14.0", optional = true}
 
 [dependencies.rocket_contrib]
 version = "*"

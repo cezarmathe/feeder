@@ -1,6 +1,6 @@
 use crate::{
     common::errors::{Error, ModelError},
-    db::{feed_item, DbConnection},
+    db::DbConnection,
 };
 
 use crypto::{digest::Digest, sha3::Sha3};
@@ -104,7 +104,7 @@ impl Feed {
         debug!("computing checksum for feed {:?}", self);
 
         if let Some(value) = db_conn {
-            return self.with_items(&value);
+            return self.with_items(value);
         }
 
         match compute_checksum(self) {
@@ -117,7 +117,7 @@ impl Feed {
     }
 
     /// Return this feed along with its items
-    pub fn with_items(&mut self, db_conn: &DbConnection) -> Option<Error> {
+    pub fn with_items(&mut self, db_conn: DbConnection) -> Option<Error> {
         if self.items.is_none() {
             return Option::None;
         }
@@ -127,12 +127,13 @@ impl Feed {
             ItemsVec::Uuid(items_uuid) => {
                 let mut items_full: Vec<FeedItem> = Vec::new();
 
-                for item_uuid in items_uuid {
-                    match feed_item::get_feed_item(db_conn, self, &item_uuid) {
-                        Ok(item) => items_full.push(item),
-                        Err(e) => return Option::Some(e),
-                    }
-                }
+                // for item_uuid in items_uuid {
+                //     let _db_conn: DbConnection = super::mongo::MongoDbConnection(db_conn.clone());
+                //     match feed_item::get_feed_item(_db_conn, self, &item_uuid) {
+                //         Ok(item) => items_full.push(item),
+                //         Err(e) => return Option::Some(e),
+                //     }
+                // }
 
                 Option::None
             }
