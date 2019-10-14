@@ -1,9 +1,9 @@
 use crate::{
-    common::{errors::FeedDbError, report::Report},
+    common::{errors::FeedDbError, report::Report, DbResult},
     create_error, option_to_result,
 };
 
-use super::{model, DbConnection, DbResult};
+use crate::db::*;
 
 use log::warn;
 use mongodb::Document;
@@ -13,7 +13,7 @@ use wither::prelude::*;
 const SCOPE: &str = "database/mongo";
 
 /// Public implementation of a FeederDb for a Mongo database
-impl super::FeedWrapper for DbConnection {
+impl FeedWrapper for DbConnection {
     fn create_feed(self, feed: model::Feed) -> DbResult<model::Feed> {
         let mut created_feed: model::Feed = model::Feed::new(
             feed.title.unwrap().as_str(),
