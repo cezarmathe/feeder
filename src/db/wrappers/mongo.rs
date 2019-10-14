@@ -50,7 +50,7 @@ impl FeedWrapper for DbConnection {
         }
     }
 
-    fn update_feed(self, feed: model::Feed) -> DbResult<model::Feed> {
+    fn update_feed(self, uuid: Uuid, feed: model::Feed) -> DbResult<model::Feed> {
         // FIXME: compute the checksum again
         let update: Document;
         update = doc! {
@@ -67,7 +67,7 @@ impl FeedWrapper for DbConnection {
             Option::Some(mongodb::coll::options::ReturnDocument::After);
 
         let filter: Document = doc! {
-            "uuid": format!("{}", feed.get_uuid().unwrap()) // FIXME: no unwraps
+            "uuid": format!("{}", uuid) // FIXME: no unwraps
         };
 
         match model::Feed::find_one_and_update(

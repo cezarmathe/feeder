@@ -30,8 +30,10 @@ pub enum FeedRouterError {
     ModelHasNoDescription,
     #[error("model has no link")]
     ModelHasNoLink,
-    #[error("model has no uuid")]
-    ModelHasNoUuid,
+    #[error("no uuid")]
+    NoUuid,
+    #[error("the endpoint argument uuid and the model uuid are not the same")]
+    ModelAndArgUuidsDiffer,
 }
 
 /// Errors that can be produced by the feed items router
@@ -106,6 +108,8 @@ pub enum HttpError {
     NotFound,
     #[error("not acceptable")]
     NotAcceptable,
+    #[error("unprocessable entity")]
+    UnprocessableEntity,
     #[error("internal server error")]
     Ise,
     #[error("not implemented")]

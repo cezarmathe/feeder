@@ -18,7 +18,6 @@ pub fn start() {
             "/",
             routes![
                 feeds::get_feed,
-                feeds::get_feeds,
                 feeds::get_feed_checksum,
                 feeds::create_feed,
                 feeds::update_feed,
@@ -36,6 +35,7 @@ pub fn start() {
             catchers::http_403_forbidden,
             catchers::http_404_not_found,
             catchers::http_406_not_acceptable,
+            catchers::http_422_unprocessable_entity,
             catchers::http_500_internal_server_error,
             catchers::http_501_not_implemented,
             catchers::http_503_service_unavailable,

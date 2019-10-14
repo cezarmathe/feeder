@@ -59,7 +59,7 @@ pub trait FeedWrapper {
     }
 
     /// Update a feed
-    fn update_feed(self, feed: Feed) -> DbResult<Feed>;
+    fn update_feed(self, uuid: Uuid, feed: Feed) -> DbResult<Feed>;
 
     /// Update multiple feeds
     fn update_feeds(self, feeds: Vec<Feed>) -> Vec<DbResult<Feed>>
@@ -69,7 +69,7 @@ pub trait FeedWrapper {
         let mut results: Vec<DbResult<Feed>> = Vec::new();
 
         for feed in feeds {
-            results.push(self.clone().update_feed(feed));
+            results.push(self.clone().update_feed(Uuid::new_v4(), feed)); // FIXME: dangerous
         }
 
         results
