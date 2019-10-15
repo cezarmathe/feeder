@@ -43,8 +43,12 @@ fn check_feed_model(model: &Feed) -> Result<Json<()>, Json<Error>> {
     Result::Ok(Json(()))
 }
 
-#[get("/feeds/<uuid>?<with_items>")]
-pub fn get_feed(db_conn: DbConnection, uuid: String, with_items: Option<bool>) -> JsonResult<Feed> {
+#[get("/feeds/<uuid>?<_with_items>")]
+pub fn get_feed(
+    db_conn: DbConnection,
+    uuid: String,
+    _with_items: Option<bool>,
+) -> JsonResult<Feed> {
     // Check if the uuid is valid and return if it's not
     let good_uuid: Uuid;
     match check_uuid(uuid, SCOPE) {
