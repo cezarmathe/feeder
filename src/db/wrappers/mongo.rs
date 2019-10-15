@@ -276,8 +276,72 @@ impl FeedItemWrapper for DbConnection {
         self,
         parent_feed: model::Feed,
         uuid: Uuid,
-        feed_item: model::FeedItem,
+        mut feed_item: model::FeedItem,
     ) -> DbResult<model::FeedItem> {
+        // If the feed does not have such item, error
+        if self
+            .get_feed_item(parent_feed.clone(), uuid.clone())
+            .is_err()
+        {
+            warn!("parent feed does now have such item");
+            return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToUpdate));
+        }
+
+        // Compute the new checksum
+        if let Some(e) = feed_item.compute_checksum() {
+            warn!("failed to compute the checksum for the feed item");
+            return Result::Err(e);
+        }
+
+        let update: Document;
+        let update_bson: mongodb::Bson;
+        match mongodb::to_bson(&feed_item) {
+            Ok(value) => update_bson = value,
+            Err(e) => {
+                warn!("failed to encode feed item into bson: {:?}", e);
+                return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToUpdate));
+            }
+        }
+        match update_bson.as_document() {
+            Some(value) => update = doc! {"$set": value.clone()},
+            None => {
+                warn!("failed to get the bson-encoded feed as a document");
+                return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToUpdate));
+            }
+        }
+
+        let mut find_and_update_options: mongodb::coll::options::FindOneAndUpdateOptions;
+        find_and_update_options = mongodb::coll::options::FindOneAndUpdateOptions::new();
+        find_and_update_options.return_document =
+            Option::Some(mongodb::coll::options::ReturnDocument::After);
+
+        let filter: Document = doc! {
+            "uuid": format!("{}", uuid)
+        };
+
+        let updated_feed_item: model::FeedItem;
+        match model::FeedItem::find_one_and_update(
+            self.clone(),
+            filter,
+            update,
+            Option::Some(find_and_update_options),
+        ) {
+            Ok(value) => {
+                if let Some(_value) = value {
+                    updated_feed_item = _value;
+                } else {
+                    return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToUpdate));
+                }
+            }
+            Err(e) => {
+                warn!("error updating the feed item: {:?}", e);
+                return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToUpdate));
+            }
+        }
+
+        warn!("did not update the original feed");
+        Result::Ok(updated_feed_item)
+        // FIXME: recompute checksum of the feed and update it accordingly
     }
 
     /// Delete a feed item

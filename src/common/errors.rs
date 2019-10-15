@@ -89,6 +89,8 @@ pub enum FeedDbError {
 /// Errors that can be produced by the feed item db
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum FeedItemDbError {
+    #[error("failed to update the feed item")]
+    FailedToUpdate,
     #[error("failed to save the new feed item")]
     FailedToSaveItem,
     #[error("failed to get the feed items from the database")]
