@@ -135,7 +135,7 @@ impl FeedWrapper for DbConnection {
 impl FeedItemWrapper for DbConnection {
     fn create_feed_item(
         self,
-        parent_feed: model::Feed,
+        mut parent_feed: model::Feed,
         feed_item: model::FeedItem,
     ) -> DbResult<model::FeedItem> {
         let mut created_feed_item = model::FeedItem::new(
@@ -154,10 +154,10 @@ impl FeedItemWrapper for DbConnection {
             parent_feed.items = Option::Some(model::ItemsVec::Uuid(Vec::new()));
         }
 
-        let items_vec: Vec<Uuid>;
+        let mut items_vec: Vec<Uuid>;
         match parent_feed.items.unwrap() {
             model::ItemsVec::Uuid(value) => items_vec = value,
-            model::ItemsVec::Full(value) => {
+            model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
                 if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
                     info!("parent feed had the full items, changed to uuids only");
@@ -175,15 +175,15 @@ impl FeedItemWrapper for DbConnection {
         Result::Ok(created_feed_item)
     }
 
-    fn get_feed_item(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<model::FeedItem> {
+    fn get_feed_item(self, mut parent_feed: model::Feed, uuid: Uuid) -> DbResult<model::FeedItem> {
         if parent_feed.items.is_none() {
             return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
         }
 
-        let items_vec: Vec<Uuid>;
+        let mut items_vec: Vec<Uuid>;
         match parent_feed.items.unwrap() {
             model::ItemsVec::Uuid(value) => items_vec = value,
-            model::ItemsVec::Full(value) => {
+            model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
                 if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
                     info!("parent feed had the full items, changed to uuids only");
@@ -236,7 +236,7 @@ impl FeedItemWrapper for DbConnection {
         let parent_item_uuids: Vec<Uuid>;
         match parent_feed.items.unwrap() {
             model::ItemsVec::Uuid(value) => parent_item_uuids = value,
-            model::ItemsVec::Full(value) => {
+            model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
                 if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
                     info!("parent feed had the full items, changed to uuids only");
@@ -280,6 +280,7 @@ impl FeedItemWrapper for DbConnection {
     ) -> DbResult<model::FeedItem> {
         // If the feed does not have such item, error
         if self
+            .clone()
             .get_feed_item(parent_feed.clone(), uuid.clone())
             .is_err()
         {
@@ -345,8 +346,83 @@ impl FeedItemWrapper for DbConnection {
     }
 
     /// Delete a feed item
-    fn delete_feed_item(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<Report<String>> {}
+    fn delete_feed_item(
+        self,
+        mut parent_feed: model::Feed,
+        uuid: Uuid,
+    ) -> DbResult<Report<String>> {
+        // If the feed does not have such item, error
+        if self
+            .get_feed_item(parent_feed.clone(), uuid.clone())
+            .is_err()
+        {
+            warn!("parent feed does not have such item");
+            return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToDelete));
+        }
+
+        let filter: Document = doc! {
+            "uuid": format!("{}", uuid.clone())
+        };
+
+        match model::FeedItem::find_one_and_delete(self.clone(), filter, Option::None) {
+            Ok(value) => {
+                if value.is_none() {
+                    warn!("the database did not return the old feed item after deleting");
+                    return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToDelete));
+                }
+            }
+            Err(e) => {
+                warn!("failed to delete the feed item: {:?}", e);
+                return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToDelete));
+            }
+        }
+
+        // Get the item uuids of this feed
+        let mut parent_item_uuids: Vec<Uuid>;
+        match parent_feed.items.unwrap() {
+            model::ItemsVec::Uuid(value) => parent_item_uuids = value,
+            model::ItemsVec::Full(_) => {
+                parent_feed.with_uuids();
+                if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
+                    info!("parent feed had the full items, changed to uuids only");
+                    parent_item_uuids = _value;
+                } else {
+                    warn!("failed to change the parent feed to have uuids only");
+                    return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+                }
+            }
+        }
+        for (index, item) in parent_item_uuids.iter().enumerate() {
+            if *item == uuid {
+                parent_item_uuids.remove(index);
+                break;
+            }
+        }
+        parent_feed.items = Option::Some(model::ItemsVec::Uuid(parent_item_uuids));
+        self.update_feed(parent_feed.get_uuid().unwrap(), parent_feed)?;
+
+        Result::Ok(Report::new(
+            SCOPE.to_string(),
+            "deleted feed item".to_string(),
+        ))
+    }
 
     /// Get the checksum of a feed item
-    fn get_feed_item_checksum(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<String> {}
+    fn get_feed_item_checksum(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<String> {
+        let feed_item: model::FeedItem;
+
+        // If the feed does not have such item, error
+        match self.get_feed_item(parent_feed.clone(), uuid.clone()) {
+            Ok(value) => feed_item = value,
+            Err(e) => {
+                warn!("parent feed does not have such item: {:?}", e);
+                return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToDelete));
+            }
+        }
+
+        if let Some(value) = feed_item.get_checksum() {
+            return Result::Ok(value);
+        }
+        Result::Err(create_error!(SCOPE, FeedItemDbError::NoChecksum))
+    }
 }

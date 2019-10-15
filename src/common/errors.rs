@@ -89,6 +89,8 @@ pub enum FeedDbError {
 /// Errors that can be produced by the feed item db
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum FeedItemDbError {
+    #[error("failed to delete the feed item")]
+    FailedToDelete,
     #[error("failed to update the feed item")]
     FailedToUpdate,
     #[error("failed to save the new feed item")]
@@ -97,6 +99,8 @@ pub enum FeedItemDbError {
     FailedToGetItems,
     #[error("no item found")]
     NoItemFound,
+    #[error("no checksum")]
+    NoChecksum,
 }
 
 /// Errors that can be produced by Rocket catchers
