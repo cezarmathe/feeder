@@ -12,7 +12,7 @@ use wither::prelude::*;
 
 const SCOPE: &str = "database/mongo";
 
-/// Public implementation of a FeederDb for a Mongo database
+/// Implementation of the FeederWrapper for MongoDb
 impl FeedWrapper for DbConnection {
     fn create_feed(self, feed: model::Feed) -> DbResult<model::Feed> {
         let mut created_feed: model::Feed = model::Feed::new(
@@ -40,6 +40,7 @@ impl FeedWrapper for DbConnection {
                 if let Some(feed) = value {
                     return Result::Ok(feed);
                 } else {
+                    warn!("the database returned no feed");
                     return Result::Err(create_error!(SCOPE, FeedDbError::FailedToGetFeeds));
                 }
             }
@@ -52,17 +53,25 @@ impl FeedWrapper for DbConnection {
 
     fn update_feed(self, uuid: Uuid, mut feed: model::Feed) -> DbResult<model::Feed> {
         if let Some(e) = feed.compute_checksum(Option::None) {
-            return Result::Err(e);
+            return Result::Err(e); // FIXME: should move the checksum update after the feed is updated in the database
         }
 
         let update: Document;
-        update = doc! {
-            "$set": mongodb::to_bson(&feed)
-            .unwrap()
-            .as_document()
-            .unwrap()
-            .clone()
-        }; // FIXME: no unwraps
+        let update_bson: mongodb::Bson;
+        match mongodb::to_bson(&feed) {
+            Ok(value) => update_bson = value,
+            Err(e) => {
+                warn!("failed to encode feed into bson: {:?}", e);
+                return Result::Err(create_error!(SCOPE, FeedDbError::FailedToUpdateFeed));
+            }
+        }
+        match update_bson.as_document() {
+            Some(value) => update = doc! {"$set": value.clone()},
+            None => {
+                warn!("failed to get the bson-encoded feed as a document");
+                return Result::Err(create_error!(SCOPE, FeedDbError::FailedToUpdateFeed));
+            }
+        }
 
         let mut find_and_update_options: mongodb::coll::options::FindOneAndUpdateOptions;
         find_and_update_options = mongodb::coll::options::FindOneAndUpdateOptions::new();
@@ -70,7 +79,7 @@ impl FeedWrapper for DbConnection {
             Option::Some(mongodb::coll::options::ReturnDocument::After);
 
         let filter: Document = doc! {
-            "uuid": format!("{}", uuid) // FIXME: no unwraps
+            "uuid": format!("{}", uuid)
         };
 
         match model::Feed::find_one_and_update(
@@ -95,6 +104,7 @@ impl FeedWrapper for DbConnection {
         match model::Feed::find_one_and_delete(self.clone(), filter, Option::None) {
             Ok(value) => {
                 if let None = value {
+                    warn!("the database did not return the old feed after deleting");
                     return Result::Err(create_error!(SCOPE, FeedDbError::FailedToDeleteFeed));
                 } else {
                     return Result::Ok(Report::new(SCOPE.to_string(), "deleted feed".to_string()));
@@ -109,6 +119,10 @@ impl FeedWrapper for DbConnection {
 
     fn get_feed_checksum(self, _uuid: Uuid) -> DbResult<String> {
         let feed: model::Feed = self.get_feed(_uuid)?;
-        Result::Ok(format!("{}", feed.get_uuid().unwrap())) // FIXME: no unwraps
+        if let Some(value) = feed.get_uuid() {
+            return Result::Ok(format!("{}", value));
+        }
+        warn!("the feed has no checksum");
+        Result::Err(create_error!(SCOPE, FeedDbError::FeedHasNoChecksum))
     }
 }
