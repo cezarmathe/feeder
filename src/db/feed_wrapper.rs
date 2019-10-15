@@ -23,24 +23,6 @@ pub trait FeedWrapper {
         results
     }
 
-    // /// Save a feed in the database. Internally used by create and update operations
-    // fn save_feed(&self, db_conn: &DbConnection, feed: model::Feed) -> DbResult<model::Feed>;
-
-    // /// Save multiple feeds in the database. Internally used by create and update operations
-    // fn save_feeds(
-    //     &self,
-    //     db_conn: &DbConnection,
-    //     feeds: Vec<model::Feed>,
-    // ) -> Vec<DbResult<model::Feed>> {
-    //     let results: Vec<DbResult<model::Feed>> = Vec::new();
-
-    //     for feed in feeds {
-    //         results.push(self.save_feed(db_conn, feed));
-    //     }
-
-    //     results
-    // }
-
     /// Get a feed from the database
     fn get_feed(self, uuid: Uuid) -> DbResult<Feed>;
 
