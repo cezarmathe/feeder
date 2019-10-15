@@ -175,7 +175,52 @@ impl FeedItemWrapper for DbConnection {
         Result::Ok(created_feed_item)
     }
 
-    fn get_feed_item(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<model::FeedItem> {}
+    fn get_feed_item(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<model::FeedItem> {
+        if parent_feed.items.is_none() {
+            return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+        }
+
+        let items_vec: Vec<Uuid>;
+        match parent_feed.items.unwrap() {
+            model::ItemsVec::Uuid(value) => items_vec = value,
+            model::ItemsVec::Full(value) => {
+                parent_feed.with_uuids();
+                if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
+                    info!("parent feed had the full items, changed to uuids only");
+                    items_vec = _value;
+                } else {
+                    warn!("failed to change the parent feed to have uuids only");
+                    return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+                }
+            }
+        }
+
+        for item_uuid in items_vec {
+            if item_uuid == uuid {
+                let filter: Document = doc! {
+                    "uuid": format!("{}", uuid)
+                };
+
+                match model::FeedItem::find_one(self.clone(), Option::Some(filter), Option::None) {
+                    Ok(value) => {
+                        if let Some(feed_item) = value {
+                            return Result::Ok(feed_item);
+                        } else {
+                            warn!("the database returned no feed item");
+                            return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+                        }
+                    }
+                    Err(e) => {
+                        warn!("failed to get the feed item: {:?}", e);
+                        return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+                    }
+                }
+            }
+        }
+
+        warn!("parent feed has no matching feed item");
+        Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound))
+    }
 
     fn get_feed_items(
         self,
