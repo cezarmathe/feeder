@@ -1,11 +1,15 @@
 use crate::{
-    common::{errors::FeedDbError, report::Report, DbResult},
+    common::{
+        errors::{FeedDbError, FeedItemDbError},
+        report::Report,
+        DbResult,
+    },
     create_error, option_to_result,
 };
 
 use crate::db::*;
 
-use log::warn;
+use log::*;
 use mongodb::Document;
 use uuid::Uuid;
 use wither::prelude::*;
@@ -125,4 +129,72 @@ impl FeedWrapper for DbConnection {
         warn!("the feed has no checksum");
         Result::Err(create_error!(SCOPE, FeedDbError::FeedHasNoChecksum))
     }
+}
+
+/// Implementation of FeedItemWrapper for MongoDb
+impl FeedItemWrapper for DbConnection {
+    fn create_feed_item(
+        self,
+        parent_feed: model::Feed,
+        feed_item: model::FeedItem,
+    ) -> DbResult<model::FeedItem> {
+        let mut created_feed_item = model::FeedItem::new(
+            feed_item.title.as_str(),
+            feed_item.link.as_str(),
+            feed_item.description.as_str(),
+        )?;
+
+        if let Err(e) = created_feed_item.save(self.clone(), Option::None) {
+            warn!("failed to save feed item in the database: {:?}", e);
+            return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToSaveItem));
+        }
+
+        if parent_feed.items.is_none() {
+            info!("parent feed did not have any items, creating the items list now");
+            parent_feed.items = Option::Some(model::ItemsVec::Uuid(Vec::new()));
+        }
+
+        let items_vec: Vec<Uuid>;
+        match parent_feed.items.unwrap() {
+            model::ItemsVec::Uuid(value) => items_vec = value,
+            model::ItemsVec::Full(value) => {
+                parent_feed.with_uuids();
+                if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
+                    info!("parent feed had the full items, changed to uuids only");
+                    items_vec = _value;
+                } else {
+                    warn!("failed to change the parent feed to have uuids only");
+                    return Result::Err(create_error!(SCOPE, FeedItemDbError::FailedToSaveItem));
+                }
+            }
+        }
+        items_vec.push(created_feed_item.get_uuid().unwrap());
+        parent_feed.items = Option::Some(model::ItemsVec::Uuid(items_vec));
+        self.update_feed(parent_feed.get_uuid().unwrap(), parent_feed)?;
+
+        Result::Ok(created_feed_item)
+    }
+
+    fn get_feed_item(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<model::FeedItem> {}
+
+    fn get_feed_items(
+        self,
+        parent_feed: model::Feed,
+        uuids: Option<Vec<Uuid>>,
+    ) -> DbResult<Vec<model::FeedItem>> {
+    }
+
+    fn update_feed_item(
+        self,
+        parent_feed: model::Feed,
+        uuid: Uuid,
+        feed_item: model::FeedItem,
+    ) -> DbResult<model::FeedItem> {
+    }
+
+    /// Delete a feed item
+    fn delete_feed_item(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<Report<String>> {}
+
+    /// Get the checksum of a feed item
+    fn get_feed_item_checksum(self, parent_feed: model::Feed, uuid: Uuid) -> DbResult<String> {}
 }
