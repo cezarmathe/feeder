@@ -38,10 +38,10 @@ impl FeedWrapper for DbConnection {
         match model::Feed::find_one(self.clone(), Option::Some(filter), Option::None) {
             Ok(value) => {
                 if let Some(feed) = value {
-                    return Result::Ok(feed);
+                    Result::Ok(feed)
                 } else {
                     warn!("the database returned no feed");
-                    return Result::Err(create_error!(SCOPE, FeedDbError::FailedToGetFeeds));
+                    Result::Err(create_error!(SCOPE, FeedDbError::FailedToGetFeeds))
                 }
             }
             Err(e) => {
@@ -103,11 +103,11 @@ impl FeedWrapper for DbConnection {
 
         match model::Feed::find_one_and_delete(self.clone(), filter, Option::None) {
             Ok(value) => {
-                if let None = value {
+                if value.is_none() {
                     warn!("the database did not return the old feed after deleting");
-                    return Result::Err(create_error!(SCOPE, FeedDbError::FailedToDeleteFeed));
+                    Result::Err(create_error!(SCOPE, FeedDbError::FailedToDeleteFeed))
                 } else {
-                    return Result::Ok(Report::new(SCOPE.to_string(), "deleted feed".to_string()));
+                    Result::Ok(Report::new(SCOPE.to_string(), "deleted feed".to_string()))
                 }
             }
             Err(e) => {

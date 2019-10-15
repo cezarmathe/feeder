@@ -118,11 +118,7 @@ impl Feed {
 
     /// Return this feed along with its items
     pub fn with_items(&mut self, db_conn: DbConnection) -> Option<Error> {
-        if self.items.is_none() {
-            return Option::None;
-        }
-
-        match self.items.as_ref().unwrap() {
+        match self.items.as_ref()? {
             ItemsVec::Full(_) => Option::None,
             ItemsVec::Uuid(items_uuid) => {
                 let mut items_full: Vec<FeedItem> = Vec::new();

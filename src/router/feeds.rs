@@ -4,7 +4,7 @@ use crate::{
     common::{
         errors::{Error, FeedRouterError},
         report::Report,
-        DbResult, JsonResult,
+        JsonResult,
     },
     db::{model::Feed, DbConnection, FeedWrapper},
     json_result,
@@ -97,7 +97,7 @@ pub fn update_feed(
         }
     }
 
-    if let None = &good_uuid {
+    if good_uuid.is_none() {
         json_result!(Result::Err(create_error!(SCOPE, FeedRouterError::NoUuid)))
     }
 
@@ -105,24 +105,6 @@ pub fn update_feed(
 
     json_result!(db_conn.update_feed(good_uuid.unwrap(), model.0))
 }
-
-// #[put("/feeds", format = "application/json", data = "<model>")]
-// pub fn update_feed_2(db_conn: DbConnection, model: Json<Feed>) -> JsonResult<Feed> {
-//     if let None = &model.0.get_uuid() {
-//         json_result!(Result::Err(create_error!(
-//             SCOPE,
-//             FeedRouterError::ModelHasNoUuid
-//         )))
-//     }
-
-//     check_feed_model(&model.0)?;
-
-//     json_result!(feed::update_feed(
-//         db_conn.clone(),
-//         &model.0.get_uuid().unwrap(),
-//         model.0
-//     ))
-// }
 
 #[delete("/feeds/<uuid>")]
 pub fn delete_feed(db_conn: DbConnection, uuid: String) -> JsonResult<Report<String>> {
