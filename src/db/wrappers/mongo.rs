@@ -227,6 +227,49 @@ impl FeedItemWrapper for DbConnection {
         parent_feed: model::Feed,
         uuids: Option<Vec<Uuid>>,
     ) -> DbResult<Vec<model::FeedItem>> {
+        // If parent feed has no items, error
+        if parent_feed.items.is_none() {
+            return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+        }
+
+        // Get the item uuids of this feed
+        let parent_item_uuids: Vec<Uuid>;
+        match parent_feed.items.unwrap() {
+            model::ItemsVec::Uuid(value) => parent_item_uuids = value,
+            model::ItemsVec::Full(value) => {
+                parent_feed.with_uuids();
+                if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
+                    info!("parent feed had the full items, changed to uuids only");
+                    parent_item_uuids = _value;
+                } else {
+                    warn!("failed to change the parent feed to have uuids only");
+                    return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
+                }
+            }
+        }
+
+        // Get the item uuids that should be retrieved
+        // If no uuids are passed to the function, search for all feed items in this feed
+        // Otherwise, trim the feed item uuid list to the ones specifiedj
+        let item_uuids: Vec<Uuid>;
+        if let Some(uuid_vec) = uuids {
+            item_uuids = Vec::new();
+            for item_uuid in uuid_vec {
+                if parent_item_uuids.contains(&item_uuid) {
+                    item_uuids.push(item_uuid);
+                }
+            }
+        } else {
+            item_uuids = parent_item_uuids;
+        }
+
+        let items_vec: Vec<model::FeedItem>;
+        for item_uuid in item_uuids {
+            let feed_item: model::FeedItem = self.get_feed_item(parent_feed.clone(), item_uuid)?;
+            items_vec.push(feed_item);
+        }
+
+        Result::Ok(items_vec)
     }
 
     fn update_feed_item(
