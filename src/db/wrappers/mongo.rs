@@ -53,7 +53,7 @@ impl FeedWrapper for DbConnection {
 
     fn update_feed(self, uuid: Uuid, mut feed: model::Feed) -> DbResult<model::Feed> {
         if let Some(e) = feed.compute_checksum(Option::None) {
-            return Result::Err(e); // FIXME: should move the checksum update after the feed is updated in the database
+            return Result::Err(e);
         }
 
         let update: Document;
