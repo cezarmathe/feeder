@@ -55,6 +55,7 @@ pub struct Feed {
 impl Feed {
     /// Create a new feed.
     pub fn new(_title: &str, _description: &str, _link: &str) -> Result<Self, Error> {
+        // FIXME: make use of a provided model
         debug!(
             "creating a new feed struct with args: {:?}, {:?}, {:?}",
             _title, _description, _link
@@ -190,6 +191,7 @@ pub struct FeedItem {
 impl FeedItem {
     /// Create a new feed item
     pub fn new(_title: &str, _link: &str, _description: &str) -> Result<Self, Error> {
+        // FIXME: make use of the provided model
         let title = String::from(_title);
         let link = String::from(_link);
         let description = String::from(_description);
