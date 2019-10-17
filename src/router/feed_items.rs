@@ -1,7 +1,7 @@
 use super::check_uuid;
 
 use crate::{
-    common::{errors::FeedItemsRouterError, report::Report, JsonResult},
+    common::{report::Report, JsonResult},
     db::{
         model::{Feed, FeedItem},
         DbConnection, FeedItemWrapper, FeedWrapper,
