@@ -30,8 +30,10 @@ pub enum FeedRouterError {
     ModelHasNoDescription,
     #[error("model has no link")]
     ModelHasNoLink,
-    #[error("model has no uuid")]
-    ModelHasNoUuid,
+    #[error("no uuid")]
+    NoUuid,
+    #[error("the endpoint argument uuid and the model uuid are not the same")]
+    ModelAndArgUuidsDiffer,
 }
 
 /// Errors that can be produced by the feed items router
@@ -87,10 +89,18 @@ pub enum FeedDbError {
 /// Errors that can be produced by the feed item db
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum FeedItemDbError {
+    #[error("failed to delete the feed item")]
+    FailedToDelete,
+    #[error("failed to update the feed item")]
+    FailedToUpdate,
+    #[error("failed to save the new feed item")]
+    FailedToSaveItem,
     #[error("failed to get the feed items from the database")]
     FailedToGetItems,
     #[error("no item found")]
     NoItemFound,
+    #[error("no checksum")]
+    NoChecksum,
 }
 
 /// Errors that can be produced by Rocket catchers
@@ -106,6 +116,8 @@ pub enum HttpError {
     NotFound,
     #[error("not acceptable")]
     NotAcceptable,
+    #[error("unprocessable entity")]
+    UnprocessableEntity,
     #[error("internal server error")]
     Ise,
     #[error("not implemented")]

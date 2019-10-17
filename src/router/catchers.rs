@@ -33,6 +33,11 @@ pub fn http_406_not_acceptable(_request: &Request) -> Json<Error> {
     catcher_json(super::SCOPE, HttpError::NotAcceptable)
 }
 
+#[catch(422)]
+pub fn http_422_unprocessable_entity(_request: &Request) -> Json<Error> {
+    catcher_json(super::SCOPE, HttpError::UnprocessableEntity)
+}
+
 #[catch(500)]
 pub fn http_500_internal_server_error(_request: &Request) -> Json<Error> {
     catcher_json(super::SCOPE, HttpError::Ise)

@@ -22,7 +22,7 @@ impl<T: Serialize> Report<T> {
     }
 
     /// Create a new Report with some data
-    pub fn new_with_data(scope: String, message: String, data: T) -> Report<T> {
+    pub fn _new_with_data(scope: String, message: String, data: T) -> Report<T> {
         Report {
             timestamp: super::timestamp(),
             scope,

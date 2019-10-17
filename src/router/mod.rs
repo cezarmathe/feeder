@@ -2,10 +2,7 @@ mod catchers;
 mod feed_items;
 mod feeds;
 
-use crate::{
-    common::errors::{Error, UuidError},
-    db::FeederDbConn,
-};
+use crate::common::errors::{Error, UuidError};
 
 use std::str::FromStr;
 
@@ -16,19 +13,17 @@ const SCOPE: &str = "router";
 /// Start the router
 pub fn start() {
     rocket::ignite()
-        .attach(FeederDbConn::fairing())
+        .attach(crate::db::DbConnection::fairing())
         .mount(
             "/",
             routes![
                 feeds::get_feed,
-                feeds::get_feeds,
                 feeds::get_feed_checksum,
                 feeds::create_feed,
                 feeds::update_feed,
-                feeds::update_feed_2,
                 feeds::delete_feed,
-                feed_items::get_feed_item,
-                feed_items::get_feed_items,
+                feed_items::get_all_feed_items,
+                feed_items::get_specific_feed_items,
                 feed_items::create_feed_item,
                 feed_items::update_feed_item,
                 feed_items::delete_feed_item,
@@ -40,6 +35,7 @@ pub fn start() {
             catchers::http_403_forbidden,
             catchers::http_404_not_found,
             catchers::http_406_not_acceptable,
+            catchers::http_422_unprocessable_entity,
             catchers::http_500_internal_server_error,
             catchers::http_501_not_implemented,
             catchers::http_503_service_unavailable,

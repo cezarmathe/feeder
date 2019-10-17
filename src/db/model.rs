@@ -1,6 +1,6 @@
 use crate::{
     common::errors::{Error, ModelError},
-    db::{feed_item, DbConnection},
+    db::DbConnection,
 };
 
 use crypto::{digest::Digest, sha3::Sha3};
@@ -55,6 +55,7 @@ pub struct Feed {
 impl Feed {
     /// Create a new feed.
     pub fn new(_title: &str, _description: &str, _link: &str) -> Result<Self, Error> {
+        // FIXME: make use of a provided model
         debug!(
             "creating a new feed struct with args: {:?}, {:?}, {:?}",
             _title, _description, _link
@@ -104,7 +105,7 @@ impl Feed {
         debug!("computing checksum for feed {:?}", self);
 
         if let Some(value) = db_conn {
-            return self.with_items(&value);
+            return self.with_items(value);
         }
 
         match compute_checksum(self) {
@@ -117,22 +118,19 @@ impl Feed {
     }
 
     /// Return this feed along with its items
-    pub fn with_items(&mut self, db_conn: &DbConnection) -> Option<Error> {
-        if self.items.is_none() {
-            return Option::None;
-        }
-
-        match self.items.as_ref().unwrap() {
+    pub fn with_items(&mut self, db_conn: DbConnection) -> Option<Error> {
+        match self.items.as_ref()? {
             ItemsVec::Full(_) => Option::None,
             ItemsVec::Uuid(items_uuid) => {
                 let mut items_full: Vec<FeedItem> = Vec::new();
 
-                for item_uuid in items_uuid {
-                    match feed_item::get_feed_item(db_conn, self, &item_uuid) {
-                        Ok(item) => items_full.push(item),
-                        Err(e) => return Option::Some(e),
-                    }
-                }
+                // for item_uuid in items_uuid {
+                //     let _db_conn: DbConnection = super::mongo::MongoDbConnection(db_conn.clone());
+                //     match feed_item::get_feed_item(_db_conn, self, &item_uuid) {
+                //         Ok(item) => items_full.push(item),
+                //         Err(e) => return Option::Some(e),
+                //     }
+                // }
 
                 Option::None
             }
@@ -172,7 +170,7 @@ impl Feed {
 
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct FeedItem {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none", skip)]
     id: Option<mongodb::oid::ObjectId>,
     uuid: Option<Uuid>,
     pub title: String,
@@ -193,6 +191,7 @@ pub struct FeedItem {
 impl FeedItem {
     /// Create a new feed item
     pub fn new(_title: &str, _link: &str, _description: &str) -> Result<Self, Error> {
+        // FIXME: make use of the provided model
         let title = String::from(_title);
         let link = String::from(_link);
         let description = String::from(_description);

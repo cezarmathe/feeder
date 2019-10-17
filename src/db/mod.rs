@@ -1,14 +1,11 @@
-pub mod feed;
-pub mod feed_item;
+pub mod feed_item_wrapper;
+pub mod feed_wrapper;
 pub mod model;
+pub mod wrappers;
 
-use std::sync::Arc;
+/// Re-export wrapper traits
+pub use feed_item_wrapper::FeedItemWrapper;
+pub use feed_wrapper::FeedWrapper;
 
-use mongodb::db::DatabaseInner;
-
-/// Struct used for connections to the database
-#[database("feeder")]
-pub struct FeederDbConn(Arc<DatabaseInner>);
-
-/// Abreviation for a database connection struct
-pub type DbConnection = Arc<DatabaseInner>;
+/// Re-export everything in the wrappers module
+pub use wrappers::*;
