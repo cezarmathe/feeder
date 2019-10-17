@@ -54,7 +54,7 @@ pub struct Feed {
 
 impl Feed {
     /// Create a new feed.
-    pub fn new(_title: &str, _description: &str, _link: &str) -> Result<Self, Error> {
+    pub fn _new(_title: &str, _description: &str, _link: &str) -> Result<Self, Error> {
         debug!(
             "creating a new feed struct with args: {:?}, {:?}, {:?}",
             _title, _description, _link
