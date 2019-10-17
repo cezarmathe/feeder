@@ -17,7 +17,7 @@ use wither::prelude::*;
 const SCOPE: &str = "database/mongo";
 
 /// Implementation of the FeederWrapper for MongoDb
-impl FeedWrapper for DbConnection {
+impl FeedWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
     fn create_feed(self, feed: model::Feed) -> DbResult<model::Feed> {
         let mut created_feed: model::Feed = model::Feed::new(
             feed.title.unwrap().as_str(),
@@ -132,7 +132,7 @@ impl FeedWrapper for DbConnection {
 }
 
 /// Implementation of FeedItemWrapper for MongoDb
-impl FeedItemWrapper for DbConnection {
+impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
     fn create_feed_item(
         self,
         mut parent_feed: model::Feed,
@@ -155,7 +155,7 @@ impl FeedItemWrapper for DbConnection {
         }
 
         let mut items_vec: Vec<Uuid>;
-        match parent_feed.items.unwrap() {
+        match parent_feed.items.clone().unwrap() {
             model::ItemsVec::Uuid(value) => items_vec = value,
             model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
@@ -180,8 +180,8 @@ impl FeedItemWrapper for DbConnection {
             return Result::Err(create_error!(SCOPE, FeedItemDbError::NoItemFound));
         }
 
-        let mut items_vec: Vec<Uuid>;
-        match parent_feed.items.unwrap() {
+        let items_vec: Vec<Uuid>;
+        match parent_feed.items.clone().unwrap() {
             model::ItemsVec::Uuid(value) => items_vec = value,
             model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
@@ -224,7 +224,7 @@ impl FeedItemWrapper for DbConnection {
 
     fn get_feed_items(
         self,
-        parent_feed: model::Feed,
+        mut parent_feed: model::Feed,
         uuids: Option<Vec<Uuid>>,
     ) -> DbResult<Vec<model::FeedItem>> {
         // If parent feed has no items, error
@@ -234,11 +234,11 @@ impl FeedItemWrapper for DbConnection {
 
         // Get the item uuids of this feed
         let parent_item_uuids: Vec<Uuid>;
-        match parent_feed.items.unwrap() {
+        match parent_feed.items.clone().unwrap() {
             model::ItemsVec::Uuid(value) => parent_item_uuids = value,
             model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
-                if let model::ItemsVec::Uuid(_value) = parent_feed.items.unwrap() {
+                if let model::ItemsVec::Uuid(_value) = parent_feed.items.clone().unwrap() {
                     info!("parent feed had the full items, changed to uuids only");
                     parent_item_uuids = _value;
                 } else {
@@ -251,7 +251,7 @@ impl FeedItemWrapper for DbConnection {
         // Get the item uuids that should be retrieved
         // If no uuids are passed to the function, search for all feed items in this feed
         // Otherwise, trim the feed item uuid list to the ones specifiedj
-        let item_uuids: Vec<Uuid>;
+        let mut item_uuids: Vec<Uuid>;
         if let Some(uuid_vec) = uuids {
             item_uuids = Vec::new();
             for item_uuid in uuid_vec {
@@ -263,11 +263,16 @@ impl FeedItemWrapper for DbConnection {
             item_uuids = parent_item_uuids;
         }
 
-        let items_vec: Vec<model::FeedItem>;
-        for item_uuid in item_uuids {
-            let feed_item: model::FeedItem = self.get_feed_item(parent_feed.clone(), item_uuid)?;
+        let mut items_vec: Vec<model::FeedItem> = Vec::new();
+        for index in 1..item_uuids.len() - 1 {
+            let feed_item: model::FeedItem = self
+                .clone()
+                .get_feed_item(parent_feed.clone(), *item_uuids.get(index - 1).unwrap())?; // FIXME: no unwraps
             items_vec.push(feed_item);
         }
+        let feed_item: model::FeedItem =
+            self.get_feed_item(parent_feed, *item_uuids.get(item_uuids.len() - 1).unwrap())?; // FIXME: no unwraps
+        items_vec.push(feed_item);
 
         Result::Ok(items_vec)
     }
@@ -322,7 +327,7 @@ impl FeedItemWrapper for DbConnection {
 
         let updated_feed_item: model::FeedItem;
         match model::FeedItem::find_one_and_update(
-            self.clone(),
+            self,
             filter,
             update,
             Option::Some(find_and_update_options),
@@ -353,6 +358,7 @@ impl FeedItemWrapper for DbConnection {
     ) -> DbResult<Report<String>> {
         // If the feed does not have such item, error
         if self
+            .clone()
             .get_feed_item(parent_feed.clone(), uuid.clone())
             .is_err()
         {
@@ -379,7 +385,7 @@ impl FeedItemWrapper for DbConnection {
 
         // Get the item uuids of this feed
         let mut parent_item_uuids: Vec<Uuid>;
-        match parent_feed.items.unwrap() {
+        match parent_feed.items.clone().unwrap() {
             model::ItemsVec::Uuid(value) => parent_item_uuids = value,
             model::ItemsVec::Full(_) => {
                 parent_feed.with_uuids();
