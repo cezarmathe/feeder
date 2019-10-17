@@ -70,7 +70,7 @@ pub fn get_specific_feed_items(
     }
 
     let mut good_item_uuids: Vec<Uuid> = Vec::new();
-    for item_uuid in item_uuids.unwrap().split(",") {
+    for item_uuid in item_uuids.unwrap().split(',') {
         match check_uuid(item_uuid.to_string(), SCOPE) {
             Ok(value) => good_item_uuids.push(value),
             Err(e) => {

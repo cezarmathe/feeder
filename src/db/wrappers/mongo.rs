@@ -271,7 +271,7 @@ impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
             items_vec.push(feed_item);
         }
         let feed_item: model::FeedItem =
-            self.get_feed_item(parent_feed, *item_uuids.get(item_uuids.len() - 1).unwrap())?; // FIXME: no unwraps
+            self.get_feed_item(parent_feed, *item_uuids.last().unwrap())?; // FIXME: no unwraps
         items_vec.push(feed_item);
 
         Result::Ok(items_vec)
