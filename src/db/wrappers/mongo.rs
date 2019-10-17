@@ -52,7 +52,7 @@ impl FeedWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
     }
 
     fn update_feed(self, uuid: Uuid, mut feed: model::Feed) -> DbResult<model::Feed> {
-        if let Some(e) = feed.compute_checksum(Option::None) {
+        if let Some(e) = feed.compute_checksum(Option::Some(self.clone())) {
             return Result::Err(e);
         }
 
@@ -265,12 +265,12 @@ impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
             for index in 0..item_uuids.len() - 2 {
                 let feed_item: model::FeedItem = self
                     .clone()
-                    .get_feed_item(parent_feed.clone(), *item_uuids.get(index).unwrap())?; // FIXME: no unwraps
+                    .get_feed_item(parent_feed.clone(), *item_uuids.get(index).unwrap())?;
                 items_vec.push(feed_item);
             }
         }
         let feed_item: model::FeedItem =
-            self.get_feed_item(parent_feed, *item_uuids.last().unwrap())?; // FIXME: no unwraps
+            self.get_feed_item(parent_feed, *item_uuids.last().unwrap())?;
         items_vec.push(feed_item);
 
         Result::Ok(items_vec)
@@ -326,7 +326,7 @@ impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
 
         let updated_feed_item: model::FeedItem;
         match model::FeedItem::find_one_and_update(
-            self,
+            self.clone(),
             filter,
             update,
             Option::Some(find_and_update_options),
@@ -344,9 +344,8 @@ impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
             }
         }
 
-        warn!("did not update the original feed");
+        self.update_feed(parent_feed.get_uuid().unwrap(), parent_feed)?;
         Result::Ok(updated_feed_item)
-        // FIXME: recompute checksum of the feed and update it accordingly
     }
 
     /// Delete a feed item
