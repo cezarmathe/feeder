@@ -65,6 +65,7 @@ pub fn get_specific_feed_items(
     }
 
     if item_uuids.is_none() {
+        info!("no item uuids found, fetching all items for this feed");
         json_result!((&*db_conn).clone().get_feed_items(feed, Option::None))
     }
 
@@ -115,27 +116,52 @@ pub fn create_feed_item(
 }
 
 #[put(
-    "/feeds/<_feed_uuid>/items/<_item_uuid>",
+    "/feeds/<feed_uuid>/items/<item_uuid>",
     format = "application/json",
-    data = "<_feed_item>"
+    data = "<feed_item>"
 )]
 pub fn update_feed_item(
-    _feed_uuid: String,
-    _item_uuid: String,
-    _feed_item: Json<FeedItem>,
+    db_conn: DbConnection,
+    feed_uuid: String,
+    item_uuid: String,
+    feed_item: Json<FeedItem>,
 ) -> JsonResult<FeedItem> {
-    unimplemented!();
+    // Check if the uuids are valid
+    let good_feed_uuid: Uuid;
+    match check_uuid(feed_uuid, SCOPE) {
+        Ok(value) => good_feed_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+    // Check if the uuids are valid
+    let good_item_uuid: Uuid;
+    match check_uuid(item_uuid, SCOPE) {
+        Ok(value) => good_item_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Check if the feed exists and get its feed items uuids
+    let feed: Feed;
+    match (&*db_conn).clone().get_feed(good_feed_uuid) {
+        Ok(value) => feed = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    json_result!((&*db_conn)
+        .clone()
+        .update_feed_item(feed, good_item_uuid, feed_item.0))
 }
 
-#[delete(
-    "/feeds/<_feed_uuid>/items/<_item_uuid>",
-    format = "application/json",
-    data = "<_feed_item>"
-)]
+#[delete("/feeds/<feed_uuid>/items/<item_uuid>")]
 pub fn delete_feed_item(
-    _feed_uuid: String,
-    _item_uuid: String,
-    _feed_item: Json<FeedItem>,
+    db_conn: DbConnection,
+    feed_uuid: String,
+    item_uuid: String,
 ) -> JsonResult<Report<String>> {
     unimplemented!();
 }
