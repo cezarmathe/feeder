@@ -316,7 +316,7 @@ mod test {
         #![allow(warnings)]
         *crate::_LOG;
 
-        let _feed = Feed::_gnew(
+        let _feed = Feed::_new(
             "My title",
             "My example description for my feed test",
             "https://example.com",
