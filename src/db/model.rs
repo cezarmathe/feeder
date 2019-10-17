@@ -201,7 +201,7 @@ impl Feed {
     }
 
     /// Generate the RSS representation of this feed.
-    pub fn generate_rss(&self, _db_conn: DbConnection) {
+    pub fn _generate_rss(&self, _db_conn: DbConnection) {
         unimplemented!();
     }
 }
@@ -316,7 +316,7 @@ mod test {
         #![allow(warnings)]
         *crate::_LOG;
 
-        let _feed = Feed::_new(
+        let _feed = Feed::_gnew(
             "My title",
             "My example description for my feed test",
             "https://example.com",
