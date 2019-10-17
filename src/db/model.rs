@@ -170,7 +170,7 @@ impl Feed {
 
 #[derive(Clone, Debug, Deserialize, Model, Serialize)]
 pub struct FeedItem {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none", skip)]
     id: Option<mongodb::oid::ObjectId>,
     uuid: Option<Uuid>,
     pub title: String,
