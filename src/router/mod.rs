@@ -1,5 +1,5 @@
 mod catchers;
-// mod feed_items;
+mod feed_items;
 mod feeds;
 
 use crate::common::errors::{Error, UuidError};
@@ -22,11 +22,11 @@ pub fn start() {
                 feeds::create_feed,
                 feeds::update_feed,
                 feeds::delete_feed,
-                // feed_items::get_feed_item,
-                // feed_items::get_feed_items,
-                // feed_items::create_feed_item,
-                // feed_items::update_feed_item,
-                // feed_items::delete_feed_item,
+                feed_items::get_all_feed_items,
+                feed_items::get_specific_feed_items,
+                feed_items::create_feed_item,
+                feed_items::update_feed_item,
+                feed_items::delete_feed_item,
             ],
         )
         .register(catchers![

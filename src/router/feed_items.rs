@@ -3,9 +3,8 @@ use super::check_uuid;
 use crate::{
     common::{errors::FeedItemsRouterError, report::Report, JsonResult},
     db::{
-        feed, feed_item,
-        model::{Feed, FeedItem, ItemsVec},
-        FeederDbConn,
+        model::{Feed, FeedItem},
+        DbConnection, FeedItemWrapper, FeedWrapper,
     },
     json_result,
 };
@@ -18,42 +17,35 @@ use uuid::Uuid;
 
 const SCOPE: &str = "router/feed_items";
 
-#[get("/feeds/<feed_uuid>/items/<item_uuid>")]
-pub fn get_feed_item(
-    db_conn: FeederDbConn,
-    feed_uuid: String,
-    item_uuid: String,
-) -> JsonResult<FeedItem> {
+#[get("/feeds/<feed_uuid>/items")]
+pub fn get_all_feed_items(db_conn: DbConnection, feed_uuid: String) -> JsonResult<Vec<FeedItem>> {
     // Check if the uuids are valid
     let good_feed_uuid: Uuid;
     match check_uuid(feed_uuid, SCOPE) {
         Ok(value) => good_feed_uuid = value,
-        Err(e) => {
-            json_result!(Result::Err(e));
-        }
-    }
-    let good_item_uuid: Uuid;
-    match check_uuid(item_uuid, SCOPE) {
-        Ok(value) => good_item_uuid = value,
         Err(e) => {
             json_result!(Result::Err(e));
         }
     }
 
     // Check if the feed exists and get its feed items uuids
-    let mut feed: Feed;
-    match feed::get_feed((&*db_conn).clone(), &good_feed_uuid) {
+    let feed: Feed;
+    match (&*db_conn).clone().get_feed(good_feed_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
         }
     }
 
-    json_result!((&*db_conn).get_feed_item(feed, good_item_uuid))
+    json_result!((&*db_conn).clone().get_feed_items(feed, Option::None))
 }
 
-#[get("/feeds/<feed_uuid>/items")]
-pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Vec<FeedItem>> {
+#[get("/feeds/<feed_uuid>/items/<item_uuids>")]
+pub fn get_specific_feed_items(
+    db_conn: DbConnection,
+    feed_uuid: String,
+    item_uuids: Option<String>,
+) -> JsonResult<Vec<FeedItem>> {
     // Check if the uuids are valid
     let good_feed_uuid: Uuid;
     match check_uuid(feed_uuid, SCOPE) {
@@ -63,34 +55,32 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
         }
     }
 
-    // Check if the feed exists and get its items
-    let mut feed: Feed;
-    match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
+    // Check if the feed exists and get its feed items uuids
+    let feed: Feed;
+    match (&*db_conn).clone().get_feed(good_feed_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
         }
     }
-    if feed.items.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedItemsRouterError::FeedHasNoItems
-        )))
+
+    if item_uuids.is_none() {
+        json_result!((&*db_conn).clone().get_feed_items(feed, Option::None))
     }
 
-    // If the feed does not contain the full items, retrieve all the items
-    if let ItemsVec::Uuid(_) = feed.items.as_ref().unwrap() {
-        feed.with_items(&db_conn.0);
+    let mut good_item_uuids: Vec<Uuid> = Vec::new();
+    for item_uuid in item_uuids.unwrap().split(",") {
+        match check_uuid(item_uuid.to_string(), SCOPE) {
+            Ok(value) => good_item_uuids.push(value),
+            Err(e) => {
+                json_result!(Result::Err(e));
+            }
+        }
     }
 
-    if let ItemsVec::Full(feed_items) = feed.items.unwrap() {
-        json_result!(Result::Ok(feed_items))
-    } else {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedItemsRouterError::FeedHasNoItems
-        )))
-    }
+    json_result!((&*db_conn)
+        .clone()
+        .get_feed_items(feed, Option::Some(good_item_uuids)))
 }
 
 #[post(
@@ -99,7 +89,7 @@ pub fn get_feed_items(db_conn: FeederDbConn, feed_uuid: String) -> JsonResult<Ve
     data = "<model>"
 )]
 pub fn create_feed_item(
-    db_conn: FeederDbConn,
+    db_conn: DbConnection,
     feed_uuid: String,
     model: Json<FeedItem>,
 ) -> JsonResult<FeedItem> {
@@ -112,66 +102,16 @@ pub fn create_feed_item(
         }
     }
 
-    // Check if the feed exists and get its items
-    let mut parent_feed: Feed;
-    match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
-        Ok(value) => parent_feed = value,
+    // Check if the feed exists and get its feed items uuids
+    let feed: Feed;
+    match (&*db_conn).clone().get_feed(good_feed_uuid) {
+        Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
         }
     }
 
-    // Retrieve the uuid list of items from the feed
-    let mut feed_item_uuid_vec: Vec<Uuid>;
-    if let Some(items_vec) = parent_feed.items {
-        match items_vec {
-            ItemsVec::Uuid(vec) => {
-                feed_item_uuid_vec = vec;
-            }
-            ItemsVec::Full(vec) => {
-                feed_item_uuid_vec = Vec::new();
-                for item in vec {
-                    if let Some(value) = item.get_uuid() {
-                        feed_item_uuid_vec.push(value);
-                    }
-                }
-            }
-        }
-    } else {
-        feed_item_uuid_vec = Vec::new();
-    }
-
-    // Save the feed item in the database
-    let feed_item: FeedItem;
-    if let Ok(value) = FeedItem::new(
-        // TODO: actually add the feed item in the database
-        model.title.as_str(),
-        model.link.as_str(),
-        model.description.as_str(),
-    ) {
-        feed_item = value;
-    } else {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedItemsRouterError::CouldNotCreateFeedItem
-        )))
-    }
-
-    // Add the feed item in the feed
-    feed_item_uuid_vec.push(feed_item.get_uuid().unwrap()); // FIXME: UNSAFE!!!
-    parent_feed.items = Option::Some(ItemsVec::Uuid(feed_item_uuid_vec));
-
-    // Update the feed's checksum
-    if let Some(value) = parent_feed.compute_checksum(Option::Some(db_conn.clone())) {
-        json_result!(Result::Err(value));
-    }
-
-    // Update the feed in the database
-    if let Err(e) = feed::update_feed(db_conn.clone(), &good_feed_uuid, parent_feed) {
-        json_result!(Result::Err(e))
-    }
-
-    json_result!(Result::Ok(feed_item))
+    json_result!((&*db_conn).clone().create_feed_item(feed, model.0))
 }
 
 #[put(
@@ -183,7 +123,7 @@ pub fn update_feed_item(
     _feed_uuid: String,
     _item_uuid: String,
     _feed_item: Json<FeedItem>,
-) -> Json<FeedItem> {
+) -> JsonResult<FeedItem> {
     unimplemented!();
 }
 
@@ -196,6 +136,6 @@ pub fn delete_feed_item(
     _feed_uuid: String,
     _item_uuid: String,
     _feed_item: Json<FeedItem>,
-) -> Json<FeedItem> {
+) -> JsonResult<Report<String>> {
     unimplemented!();
 }
