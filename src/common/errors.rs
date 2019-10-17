@@ -24,12 +24,6 @@ impl Error {
 /// Errors that can be produced by the feed router
 #[derive(Clone, Debug, Deserialize, Error, Serialize)]
 pub enum FeedRouterError {
-    #[error("model has no title")]
-    ModelHasNoTitle,
-    #[error("model has no description")]
-    ModelHasNoDescription,
-    #[error("model has no link")]
-    ModelHasNoLink,
     #[error("no uuid")]
     NoUuid,
     #[error("the endpoint argument uuid and the model uuid are not the same")]
@@ -67,6 +61,12 @@ pub enum ModelError {
     FailedToComputeChecksum,
     #[error("model has no items")]
     NoItems,
+    #[error("model has no title")]
+    ModelHasNoTitle,
+    #[error("model has no description")]
+    ModelHasNoDescription,
+    #[error("model has no link")]
+    ModelHasNoLink,
 }
 
 /// Errors that can be produced by the feed db

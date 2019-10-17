@@ -55,7 +55,6 @@ pub struct Feed {
 impl Feed {
     /// Create a new feed.
     pub fn new(_title: &str, _description: &str, _link: &str) -> Result<Self, Error> {
-        // FIXME: make use of a provided model
         debug!(
             "creating a new feed struct with args: {:?}, {:?}, {:?}",
             _title, _description, _link
@@ -86,6 +85,45 @@ impl Feed {
         }
 
         debug!("successfully created feed: {:?}", feed);
+        Result::Ok(feed)
+    }
+
+    /// Create a new feed fromma given model
+    pub fn new_from_model(model: Feed) -> Result<Self, Error> {
+        // Filter out bad models
+        if model.title.is_none() {
+            warn!("{}", ModelError::ModelHasNoTitle);
+            return Result::Err(create_error!(SCOPE, ModelError::ModelHasNoTitle));
+        }
+        if model.description.is_none() {
+            warn!("{}", ModelError::ModelHasNoDescription);
+            return Result::Err(create_error!(SCOPE, ModelError::ModelHasNoDescription));
+        }
+        if model.link.is_none() {
+            warn!("{}", ModelError::ModelHasNoLink);
+            return Result::Err(create_error!(SCOPE, ModelError::ModelHasNoLink));
+        }
+
+        let mut feed = Feed {
+            id: Option::None,
+            uuid: Option::Some(Uuid::new_v4()),
+            title: model.title,
+            description: model.description,
+            link: model.link,
+            category: model.category,
+            copyright: model.copyright,
+            image: model.image,
+            language: model.language,
+            items: Option::None,
+            checksum: Option::None,
+        };
+
+        // Compute the checksum
+        if let Some(err) = feed.compute_checksum(Option::None) {
+            error!("could not compute the checksum for this feed");
+            return Result::Err(err);
+        }
+
         Result::Ok(feed)
     }
 

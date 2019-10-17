@@ -2,7 +2,7 @@ use super::check_uuid;
 
 use crate::{
     common::{
-        errors::{Error, FeedRouterError},
+        errors::{Error, FeedRouterError, ModelError},
         report::Report,
         JsonResult,
     },
@@ -22,21 +22,21 @@ fn check_feed_model(model: &Feed) -> Result<Json<()>, Json<Error>> {
         warn!("invalid model: no title");
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoTitle
+            ModelError::ModelHasNoTitle
         )))
     }
     if model.description.is_none() {
         warn!("invalid model: no description");
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoDescription
+            ModelError::ModelHasNoDescription
         )))
     }
     if model.link.is_none() {
         warn!("invalid model: no link");
         json_result!(Result::Err(create_error!(
             SCOPE,
-            FeedRouterError::ModelHasNoLink
+            ModelError::ModelHasNoLink
         )))
     }
     info!("valid model");
@@ -75,8 +75,6 @@ pub fn get_feed_checksum(db_conn: DbConnection, uuid: String) -> JsonResult<Stri
 
 #[post("/feeds", format = "application/json", data = "<model>")]
 pub fn create_feed(db_conn: DbConnection, model: Json<Feed>) -> JsonResult<Feed> {
-    check_feed_model(&model.0)?;
-
     json_result!((&*db_conn).clone().create_feed(model.0))
 }
 

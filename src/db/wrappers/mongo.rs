@@ -19,11 +19,7 @@ const SCOPE: &str = "database/mongo";
 /// Implementation of the FeederWrapper for MongoDb
 impl FeedWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
     fn create_feed(self, feed: model::Feed) -> DbResult<model::Feed> {
-        let mut created_feed: model::Feed = model::Feed::new(
-            feed.title.unwrap().as_str(),
-            feed.description.unwrap().as_str(),
-            feed.link.unwrap().as_str(),
-        )?;
+        let mut created_feed: model::Feed = model::Feed::new_from_model(feed)?;
 
         match created_feed.save(self.clone(), Option::None) {
             Ok(_) => Result::Ok(created_feed),
