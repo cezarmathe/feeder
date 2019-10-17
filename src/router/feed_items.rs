@@ -84,6 +84,42 @@ pub fn get_specific_feed_items(
         .get_feed_items(feed, Option::Some(good_item_uuids)))
 }
 
+#[get("/feeds/<feed_uuid>/items/<item_uuid>/checksum")]
+pub fn get_feed_item_checksum(
+    db_conn: DbConnection,
+    feed_uuid: String,
+    item_uuid: String,
+) -> JsonResult<String> {
+    // Check if the uuids are valid
+    let good_feed_uuid: Uuid;
+    match check_uuid(feed_uuid, SCOPE) {
+        Ok(value) => good_feed_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+    let good_item_uuid: Uuid;
+    match check_uuid(item_uuid, SCOPE) {
+        Ok(value) => good_item_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Check if the feed exists and get its feed items uuids
+    let feed: Feed;
+    match (&*db_conn).clone().get_feed(good_feed_uuid) {
+        Ok(value) => feed = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    json_result!((&*db_conn)
+        .clone()
+        .get_feed_item_checksum(feed, good_item_uuid))
+}
+
 #[post(
     "/feeds/<feed_uuid>/items",
     format = "application/json",

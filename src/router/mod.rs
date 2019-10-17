@@ -24,6 +24,7 @@ pub fn start() {
                 feeds::delete_feed,
                 feed_items::get_all_feed_items,
                 feed_items::get_specific_feed_items,
+                feed_items::get_feed_item_checksum,
                 feed_items::create_feed_item,
                 feed_items::update_feed_item,
                 feed_items::delete_feed_item,
