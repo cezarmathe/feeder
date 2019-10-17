@@ -1,11 +1,13 @@
 use crate::{
     common::errors::{Error, ModelError},
-    db::DbConnection,
+    db::{FeedItemWrapper, FeedWrapper},
 };
+
+use std::sync::Arc;
 
 use crypto::{digest::Digest, sha3::Sha3};
 use log::*;
-use mongodb::{coll::options::IndexModel, oid::ObjectId};
+use mongodb::{coll::options::IndexModel, db::DatabaseInner, oid::ObjectId};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -139,11 +141,11 @@ impl Feed {
 
     /// Compute the checksum of this feed
     /// The checksum is saved inside the object
-    pub fn compute_checksum(&mut self, db_conn: Option<DbConnection>) -> Option<Error> {
+    pub fn compute_checksum(&mut self, db_conn: Option<Arc<DatabaseInner>>) -> Option<Error> {
         debug!("computing checksum for feed {:?}", self);
 
         if let Some(value) = db_conn {
-            return self.with_items(value);
+            self.with_items(value);
         }
 
         match compute_checksum(self) {
@@ -156,20 +158,27 @@ impl Feed {
     }
 
     /// Return this feed along with its items
-    pub fn with_items(&mut self, db_conn: DbConnection) -> Option<Error> {
-        match self.items.as_ref()? {
+    pub fn with_items(&mut self, db_conn: Arc<DatabaseInner>) -> Option<Error> {
+        if self.items.is_none() {
+            self.items = Option::Some(ItemsVec::Full(Vec::new()));
+            match db_conn
+                .clone()
+                .update_feed(self.get_uuid().unwrap(), self.clone())
+            {
+                Ok(_) => return Option::None,
+                Err(e) => return Option::Some(e),
+            }
+        }
+
+        match self.items.clone().unwrap() {
             ItemsVec::Full(_) => Option::None,
             ItemsVec::Uuid(items_uuid) => {
-                let mut items_full: Vec<FeedItem> = Vec::new();
-
-                // for item_uuid in items_uuid {
-                //     let _db_conn: DbConnection = super::mongo::MongoDbConnection(db_conn.clone());
-                //     match feed_item::get_feed_item(_db_conn, self, &item_uuid) {
-                //         Ok(item) => items_full.push(item),
-                //         Err(e) => return Option::Some(e),
-                //     }
-                // }
-
+                let items_full: Vec<FeedItem>;
+                match db_conn.get_feed_items(self.clone(), Option::Some(items_uuid)) {
+                    Ok(value) => items_full = value,
+                    Err(e) => return Option::Some(e),
+                };
+                self.items = Option::Some(ItemsVec::Full(items_full));
                 Option::None
             }
         }
@@ -201,7 +210,7 @@ impl Feed {
     }
 
     /// Generate the RSS representation of this feed.
-    pub fn _generate_rss(&self, _db_conn: DbConnection) {
+    pub fn _generate_rss(&self, _db_conn: Arc<DatabaseInner>) {
         unimplemented!();
     }
 }
