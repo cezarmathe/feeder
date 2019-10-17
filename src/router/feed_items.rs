@@ -42,47 +42,14 @@ pub fn get_feed_item(
 
     // Check if the feed exists and get its feed items uuids
     let mut feed: Feed;
-    match feed::get_feed(db_conn.clone(), &good_feed_uuid) {
+    match feed::get_feed((&*db_conn).clone(), &good_feed_uuid) {
         Ok(value) => feed = value,
         Err(e) => {
             json_result!(Result::Err(e));
         }
     }
-    if feed.items.is_none() {
-        json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedItemsRouterError::FeedHasNoItems
-        )))
-    }
 
-    // If the feeds only contain the uuid, get the full items
-    if let ItemsVec::Uuid(_) = feed.items.as_ref().unwrap() {
-        feed.with_items(&db_conn.0);
-    }
-
-    let feed_items: Vec<FeedItem>;
-    match feed.items.unwrap() {
-        ItemsVec::Full(items) => feed_items = items,
-        ItemsVec::Uuid(_) => json_result!(Result::Err(create_error!(
-            SCOPE,
-            FeedItemsRouterError::FailedToGetFeedWithItems
-        ))),
-    }
-
-    // Check if the feed has a feed item with this uuid
-    for item in feed_items {
-        if let Some(uuid) = item.get_uuid() {
-            if uuid == good_item_uuid {
-                json_result!(Result::Ok(item))
-            }
-        }
-    }
-
-    // Otherwise, return an error
-    json_result!(Result::Err(create_error!(
-        SCOPE,
-        FeedItemsRouterError::NoFeedItemInFeed
-    )))
+    json_result!((&*db_conn).get_feed_item(feed, good_item_uuid))
 }
 
 #[get("/feeds/<feed_uuid>/items")]
