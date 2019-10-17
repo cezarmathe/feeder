@@ -146,17 +146,27 @@ impl Feed {
     pub fn compute_checksum(&mut self, db_conn: Option<Arc<DatabaseInner>>) -> Option<Error> {
         debug!("computing checksum for feed {:?}", self);
 
-        if let Some(value) = db_conn {
+        let change_flag: bool = if let Some(value) = db_conn {
             self.with_items(value);
-        }
+            true
+        } else {
+            false
+        };
+        let result: Option<Error>;
 
         match compute_checksum(self) {
             Ok(checksum) => {
                 self.checksum = Option::Some(checksum);
-                Option::None
+                result = Option::None;
             }
-            Err(e) => Option::Some(e),
+            Err(e) => result = Option::Some(e),
         }
+
+        if change_flag {
+            self.with_uuids();
+        }
+
+        result
     }
 
     /// Return this feed along with its items
@@ -222,9 +232,9 @@ pub struct FeedItem {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none", skip)]
     id: Option<mongodb::oid::ObjectId>,
     uuid: Option<Uuid>,
-    pub title: String,
-    pub link: String,
-    pub description: String,
+    pub title: Option<String>,
+    pub link: Option<String>,
+    pub description: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
@@ -239,8 +249,7 @@ pub struct FeedItem {
 
 impl FeedItem {
     /// Create a new feed item
-    pub fn new(_title: &str, _link: &str, _description: &str) -> Result<Self, Error> {
-        // FIXME: make use of the provided model
+    pub fn _new(_title: &str, _link: &str, _description: &str) -> Result<Self, Error> {
         let title = String::from(_title);
         let link = String::from(_link);
         let description = String::from(_description);
@@ -248,12 +257,46 @@ impl FeedItem {
         let mut feed_item = FeedItem {
             id: Option::None,
             uuid: Option::Some(Uuid::new_v4()),
-            title,
-            link,
-            description,
+            title: Option::Some(title),
+            link: Option::Some(link),
+            description: Option::Some(description),
             author: Option::None,
             comments: Option::None,
             enclosure: Option::None,
+            checksum: Option::None,
+        };
+
+        if let Some(e) = feed_item.compute_checksum() {
+            return Result::Err(e);
+        }
+
+        Result::Ok(feed_item)
+    }
+
+    pub fn new_from_model(model: FeedItem) -> Result<Self, Error> {
+        // Filter out bad models
+        if model.title.is_none() {
+            warn!("{}", ModelError::ModelHasNoTitle);
+            return Result::Err(create_error!(SCOPE, ModelError::ModelHasNoTitle));
+        }
+        if model.description.is_none() {
+            warn!("{}", ModelError::ModelHasNoDescription);
+            return Result::Err(create_error!(SCOPE, ModelError::ModelHasNoDescription));
+        }
+        if model.link.is_none() {
+            warn!("{}", ModelError::ModelHasNoLink);
+            return Result::Err(create_error!(SCOPE, ModelError::ModelHasNoLink));
+        }
+
+        let mut feed_item: FeedItem = FeedItem {
+            id: Option::None,
+            uuid: Option::Some(Uuid::new_v4()),
+            title: model.title,
+            link: model.link,
+            description: model.description,
+            author: model.author,
+            comments: model.comments,
+            enclosure: model.enclosure,
             checksum: Option::None,
         };
 

@@ -134,11 +134,7 @@ impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
         mut parent_feed: model::Feed,
         feed_item: model::FeedItem,
     ) -> DbResult<model::FeedItem> {
-        let mut created_feed_item = model::FeedItem::new(
-            feed_item.title.as_str(),
-            feed_item.link.as_str(),
-            feed_item.description.as_str(),
-        )?;
+        let mut created_feed_item = model::FeedItem::new_from_model(feed_item)?;
 
         if let Err(e) = created_feed_item.save(self.clone(), Option::None) {
             warn!("failed to save feed item in the database: {:?}", e);
