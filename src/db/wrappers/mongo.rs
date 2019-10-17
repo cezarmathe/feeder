@@ -119,7 +119,7 @@ impl FeedWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
 
     fn get_feed_checksum(self, _uuid: Uuid) -> DbResult<String> {
         let feed: model::Feed = self.get_feed(_uuid)?;
-        if let Some(value) = feed.get_uuid() {
+        if let Some(value) = feed.get_checksum() {
             return Result::Ok(format!("{}", value));
         }
         warn!("the feed has no checksum");
