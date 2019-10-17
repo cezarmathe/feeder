@@ -260,11 +260,18 @@ impl FeedItemWrapper for std::sync::Arc<mongodb::db::DatabaseInner> {
         }
 
         let mut items_vec: Vec<model::FeedItem> = Vec::new();
-        for index in 1..item_uuids.len() - 1 {
-            let feed_item: model::FeedItem = self
-                .clone()
-                .get_feed_item(parent_feed.clone(), *item_uuids.get(index - 1).unwrap())?; // FIXME: no unwraps
-            items_vec.push(feed_item);
+        // If there are no items, return an empty vector
+        if item_uuids.len() == 0 {
+            return Result::Ok(items_vec);
+        }
+        // If there is more than one item, iterate over 1..n-1 feed items
+        if item_uuids.len() > 1 {
+            for index in 0..item_uuids.len() - 2 {
+                let feed_item: model::FeedItem = self
+                    .clone()
+                    .get_feed_item(parent_feed.clone(), *item_uuids.get(index).unwrap())?; // FIXME: no unwraps
+                items_vec.push(feed_item);
+            }
         }
         let feed_item: model::FeedItem =
             self.get_feed_item(parent_feed, *item_uuids.last().unwrap())?; // FIXME: no unwraps

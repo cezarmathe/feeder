@@ -160,7 +160,7 @@ impl Feed {
     /// Return this feed along with its items
     pub fn with_items(&mut self, db_conn: Arc<DatabaseInner>) -> Option<Error> {
         if self.items.is_none() {
-            self.items = Option::Some(ItemsVec::Full(Vec::new()));
+            self.items = Option::Some(ItemsVec::Uuid(Vec::new()));
             match db_conn
                 .clone()
                 .update_feed(self.get_uuid().unwrap(), self.clone())
