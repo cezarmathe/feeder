@@ -17,7 +17,9 @@ const SCOPE: &str = "database/model";
 /// the Uuids or the full items
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ItemsVec {
+    #[serde(rename = "uuid")]
     Uuid(Vec<Uuid>),
+    #[serde(rename = "full")]
     Full(Vec<FeedItem>),
 }
 
@@ -131,7 +133,7 @@ impl Feed {
 
     /// Get the UUID of this feed
     pub fn get_uuid(&self) -> Option<Uuid> {
-        self.uuid
+        self.uuid.clone()
     }
 
     /// Get the checksum of this feed
