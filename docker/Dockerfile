@@ -5,11 +5,12 @@ LABEL com.cezarmathe.feeder-version="0.1.0"
 
 WORKDIR /
 
-COPY target/debug/feeder /feeder
-COPY config/Rocket.toml /Rocket.toml
+COPY ./target/release/feeder /feeder
+COPY ./config/Rocket.toml /Rocket.toml
 
 ENV DB_HOST="localhost"
 ENV DB_PORT=27017
 
 EXPOSE 8000
-CMD [ "/feeder" ]
+CMD [ "" ]
+ENTRYPOINT [ "/feeder" ]
