@@ -134,7 +134,6 @@ pub fn update_feed_item(
             json_result!(Result::Err(e));
         }
     }
-    // Check if the uuids are valid
     let good_item_uuid: Uuid;
     match check_uuid(item_uuid, SCOPE) {
         Ok(value) => good_item_uuid = value,
@@ -163,5 +162,30 @@ pub fn delete_feed_item(
     feed_uuid: String,
     item_uuid: String,
 ) -> JsonResult<Report<String>> {
-    unimplemented!();
+    // Check if the uuids are valid
+    let good_feed_uuid: Uuid;
+    match check_uuid(feed_uuid, SCOPE) {
+        Ok(value) => good_feed_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+    let good_item_uuid: Uuid;
+    match check_uuid(item_uuid, SCOPE) {
+        Ok(value) => good_item_uuid = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    // Check if the feed exists and get its feed items uuids
+    let feed: Feed;
+    match (&*db_conn).clone().get_feed(good_feed_uuid) {
+        Ok(value) => feed = value,
+        Err(e) => {
+            json_result!(Result::Err(e));
+        }
+    }
+
+    json_result!((&*db_conn).clone().delete_feed_item(feed, good_item_uuid))
 }
