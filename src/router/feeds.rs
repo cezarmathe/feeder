@@ -59,13 +59,13 @@ pub fn get_feed(
         }
     }
 
-    json_result!(db_conn.get_feed(good_uuid))
+    json_result!((&*db_conn).clone().get_feed(good_uuid))
 }
 
 #[get("/feeds/<uuid>/checksum")]
 pub fn get_feed_checksum(db_conn: DbConnection, uuid: String) -> JsonResult<String> {
     match check_uuid(uuid, SCOPE) {
-        Ok(value) => json_result!(db_conn.get_feed_checksum(value)),
+        Ok(value) => json_result!((&*db_conn).clone().get_feed_checksum(value)),
         Err(e) => {
             warn!("invalid uuid received");
             json_result!(Result::Err(e))
@@ -77,7 +77,7 @@ pub fn get_feed_checksum(db_conn: DbConnection, uuid: String) -> JsonResult<Stri
 pub fn create_feed(db_conn: DbConnection, model: Json<Feed>) -> JsonResult<Feed> {
     check_feed_model(&model.0)?;
 
-    json_result!(db_conn.create_feed(model.0))
+    json_result!((&*db_conn).clone().create_feed(model.0))
 }
 
 #[put("/feeds?<uuid>", format = "application/json", data = "<model>")]
@@ -126,13 +126,13 @@ pub fn update_feed(
 
     check_feed_model(&model.0)?;
 
-    json_result!(db_conn.update_feed(good_uuid.unwrap(), model.0))
+    json_result!((&*db_conn).clone().update_feed(good_uuid.unwrap(), model.0))
 }
 
 #[delete("/feeds/<uuid>")]
 pub fn delete_feed(db_conn: DbConnection, uuid: String) -> JsonResult<Report<String>> {
     match check_uuid(uuid, SCOPE) {
-        Ok(value) => json_result!(db_conn.delete_feed(value)),
+        Ok(value) => json_result!((&*db_conn).clone().delete_feed(value)),
         Err(e) => {
             warn!("invalid uuid received");
             json_result!(Result::Err(e))
