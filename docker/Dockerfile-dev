@@ -1,6 +1,7 @@
 FROM alpine
 
 LABEL com.cezarmathe.feeder-author="Armand Cezar Mathe <cezarmathe [at] gmail [dot] com>"
+LABEL com.cezarmathe.feeder-version="develop"
 
 WORKDIR /
 

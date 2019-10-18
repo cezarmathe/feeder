@@ -12,5 +12,4 @@ ENV DB_HOST="localhost"
 ENV DB_PORT=27017
 
 EXPOSE 8000
-CMD [ "" ]
 ENTRYPOINT [ "/feeder" ]

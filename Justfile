@@ -48,7 +48,7 @@ format:
 	cargo fmt
 
 # upload the binary artifact to the current release on github
-binary-artifact TAG: test-release
+binary-artifact TAG: install
 	@echo "Use https://github.com/aktau/github-release for automatically uploading artifacts."
 	exit 1
 
@@ -60,18 +60,17 @@ _docker_login:
 docker-image-develop: install _docker_login
 	cp config/Rocket.toml docker/Rocket.toml
 	cp ~/.cargo/bin/feeder docker/feeder
-	cd docker
-	docker build -t feeder:develop -f Dockerfile-dev .
+	docker build -t feeder:develop -f docker/Dockerfile-dev ./docker
 	docker tag feeder:develop docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
 	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
-	./ci/test-docker.sh develop
+	./ci/test_docker.sh develop
 
 # build the release docker image, requires the tag
 docker_image_release TAG: install _docker_login
 	cp config/Rocket.toml docker/Rocket.toml
 	cp ~/.cargo/bin/feeder docker/feeder
 	cd docker
-	docker build -t feeder:{{TAG}} .
+	docker build -t feeder:{{TAG}} -f docker/Dockerfile ./docker
 	docker tag feeder:{{TAG}} docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}
 	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}
-	./ci/test-docker.sh {{TAG}}
+	./ci/test_docker.sh {{TAG}}
