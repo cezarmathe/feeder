@@ -24,9 +24,6 @@ check-release:
 run-release: test-release
 	cargo run --release
 
-install: test-release
-	cargo install --path . --force
-
 clean:
 	cargo clean
 
@@ -47,28 +44,45 @@ lint:
 format:
 	cargo fmt
 
-# upload the binary artifact to the current release on github
-binary-artifact TAG: install
-	@echo "Use https://github.com/aktau/github-release for automatically uploading artifacts."
-	exit 1
+release-preps TAG:
+	git checkout -b release-{{TAG}}
+
+release TAG:
+	@echo "Bumping version numbers"
+	./scripts/bump_cargo_version.sh {{TAG}}
+	./scripts/bump_release_dockerfile_version.sh {{TAG}}
+	@echo "Git operations"
+	git commit -a -m "Bump version numbers to {{TAG}}"
+	git checkout master
+	git merge --no-ff release-{{TAG}}
+	git branch -D release-{{TAG}}
+	git tag -s -F changelog/{{TAG}}.txt
+	git push --follow-tags origin master
+
+release-ci TAG:
+	@echo "Docker image release"
+	just docker_image_release {{TAG}}
+	@echo "Uploading the binary artifact"
+	github-release release --tag {{TAG}}
+	github-release upload --tag {{TAG}} --name "feeder" --file target/release/feeder
 
 # login into the github docker package registry
 _docker_login:
 	@docker login docker.pkg.github.com -u ${GITHUB_USERNAME} -p ${GITHUB_TOKEN}
 
 # build the develop docker image
-docker-image-develop: install _docker_login
+docker-image-develop: test-release _docker_login
 	cp config/Rocket.toml docker/Rocket.toml
-	cp ~/.cargo/bin/feeder docker/feeder
+	cp target/release/feeder docker/feeder
 	docker build -t feeder:develop -f docker/Dockerfile-dev ./docker
 	docker tag feeder:develop docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
 	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
 	./ci/test_docker.sh develop
 
 # build the release docker image, requires the tag
-docker_image_release TAG: install _docker_login
+docker_image_release TAG: test-release _docker_login
 	cp config/Rocket.toml docker/Rocket.toml
-	cp ~/.cargo/bin/feeder docker/feeder
+	cp target/release/feeder docker/feeder
 	cd docker
 	docker build -t feeder:{{TAG}} -f docker/Dockerfile ./docker
 	docker tag feeder:{{TAG}} docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}

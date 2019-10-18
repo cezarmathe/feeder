@@ -18,9 +18,6 @@ jobs:
     - stage: docker image development
       if: branch = develop AND type = push
       script: just docker-image-develop
-    - stage: binary artifact
+    - stage: release
       if: branch = master AND type = push
-      script: just binary-artifact
-    - stage: docker image release
-      if: branch = master AND type = push
-      script: just docker-image-release
+      script: just release-ci 1.0.0
