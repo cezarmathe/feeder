@@ -1,5 +1,7 @@
 #!/usr/bin/env just --justfile
 
+GIT_TAG := `git describe --abbrev=0 --tags`
+
 test: build check
 	cargo test
 
@@ -47,24 +49,26 @@ format:
 release-preps TAG:
 	git checkout -b release-{{TAG}}
 
-release TAG:
-	@echo "Bumping version numbers"
-	./scripts/bump_cargo_version.sh {{TAG}}
-	./scripts/bump_release_dockerfile_version.sh {{TAG}}
+release:
+	@echo "Bumping version numbers to {{GIT_TAG}}"
+	./scripts/bump_cargo_version.sh {{GIT_TAG}}
+	./scripts/bump_release_dockerfile_version.sh {{GIT_TAG}}
 	@echo "Git operations"
-	git commit -a -m "Bump version numbers to {{TAG}}"
+	git commit -a -m "Bump version numbers to {{GIT_TAG}}"
 	git checkout master
-	git merge --no-ff release-{{TAG}}
-	git branch -D release-{{TAG}}
-	git tag -s -F changelog/{{TAG}}.txt
+	git merge --no-ff release-{{GIT_TAG}}
+	git tag -s -F changelog/{{GIT_TAG}}.txt
 	git push --follow-tags origin master
+	git checkout develop
+	git merge --no-ff release-{{GIT_TAG}}
+	git branch -D release-{{GIT_TAG}}
 
-release-ci TAG:
-	@echo "Docker image release"
-	just docker_image_release {{TAG}}
-	@echo "Uploading the binary artifact"
-	github-release release --tag {{TAG}}
-	github-release upload --tag {{TAG}} --name "feeder" --file target/release/feeder
+release-ci:
+	@echo "Uploading the binary artifact for tag {{GIT_TAG}}"
+	github-release release --tag {{GIT_TAG}}
+	github-release upload --tag {{GIT_TAG}} --name "feeder" --file target/release/feeder
+	@echo "Docker image release for tag {{GIT_TAG}}"
+	just docker_image_release {{GIT_TAG}}
 
 # login into the github docker package registry
 _docker_login:
@@ -80,11 +84,11 @@ docker-image-develop: test-release _docker_login
 	./ci/test_docker.sh develop
 
 # build the release docker image, requires the tag
-docker_image_release TAG: test-release _docker_login
+docker_image_release: test-release _docker_login
 	cp config/Rocket.toml docker/Rocket.toml
 	cp target/release/feeder docker/feeder
 	cd docker
-	docker build -t feeder:{{TAG}} -f docker/Dockerfile ./docker
-	docker tag feeder:{{TAG}} docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}
-	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}
-	./ci/test_docker.sh {{TAG}}
+	docker build -t feeder:{{GIT_TAG}} -f docker/Dockerfile ./docker
+	docker tag feeder:{{GIT_TAG}} docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{GIT_TAG}}
+	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{GIT_TAG}}
+	./ci/test_docker.sh {{GIT_TAG}}
