@@ -25,7 +25,7 @@ run-release: test-release
 	cargo run --release
 
 install: test-release
-	cargo install --path .
+	cargo install --path . --force
 
 clean:
 	cargo clean
