@@ -24,6 +24,9 @@ check-release:
 run-release: test-release
 	cargo run --release
 
+install: test-release
+	cargo install --path .
+
 clean:
 	cargo clean
 
@@ -54,13 +57,21 @@ _docker_login:
 	@docker login docker.pkg.github.com -u ${GITHUB_USERNAME} -p ${GITHUB_TOKEN}
 
 # build the develop docker image
-docker-image-develop: test-release _docker_login
-	docker build -t feeder:develop -f docker/Dockerfile-dev .
+docker-image-develop: install _docker_login
+	cp config/Rocket.toml docker/Rocket.toml
+	cp ~/.cargo/bin/feeder docker/feeder
+	cd docker
+	docker build -t feeder:develop -f Dockerfile-dev .
 	docker tag feeder:develop docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
 	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:develop
+	./ci/test-docker.sh develop
 
 # build the release docker image, requires the tag
-docker_image_release TAG: test-release _docker_login
-	docker build -t feeder:{{TAG}} -f docker/Dockerfile .
+docker_image_release TAG: install _docker_login
+	cp config/Rocket.toml docker/Rocket.toml
+	cp ~/.cargo/bin/feeder docker/feeder
+	cd docker
+	docker build -t feeder:{{TAG}} .
 	docker tag feeder:{{TAG}} docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}
 	docker push docker.pkg.github.com/${GITHUB_USERNAME}/feeder/feeder:{{TAG}}
+	./ci/test-docker.sh {{TAG}}

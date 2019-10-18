@@ -4,12 +4,11 @@ LABEL com.cezarmathe.feeder-author="Armand Cezar Mathe <cezarmathe [at] gmail [d
 
 WORKDIR /
 
-COPY ./target/release/feeder /feeder
-COPY ./config/Rocket.toml /Rocket.toml
+COPY feeder .
+COPY Rocket.toml .
 
 ENV DB_HOST="localhost"
 ENV DB_PORT=27017
 
 EXPOSE 8000
-CMD [ "" ]
 ENTRYPOINT [ "/feeder" ]
