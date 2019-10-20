@@ -77,7 +77,7 @@ release-ci: static-binary
 	cat changelog/{{GIT_TAG}}.txt | github-release release --tag {{GIT_TAG}} --description -
 	github-release upload --tag {{GIT_TAG}} --name "feeder-{{GIT_TAG}}-x86_64-unknown-linux-musl" --file target/x86_64-unknown-linux-musl/release/feeder
 	@echo "Docker image release for tag {{GIT_TAG}}"
-	just docker-image-release {{GIT_TAG}}
+	just docker-image-release
 
 # login into the github docker package registry
 _docker_preps:
