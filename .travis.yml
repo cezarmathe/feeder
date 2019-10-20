@@ -11,13 +11,11 @@ install:
 
 jobs:
   include:
-    - stage: build
-      script: just build-release
-    - stage: test
+    - stage: build, run checks, test
       script: just test-release
-    - stage: docker image development
+    - stage: build docker image for the development branch
       if: branch = develop AND type = push
       script: just docker-image-develop
     - stage: release
       if: branch = master AND type = push
-      script: just release-ci 1.0.0
+      script: just release-ci && just docker-image-release
