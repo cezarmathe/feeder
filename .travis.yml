@@ -19,4 +19,4 @@ jobs:
       script: just docker-image-develop
     - stage: release
       if: branch = master AND type = push
-      script: just release-ci && just docker-image-release
+      script: just release-ci

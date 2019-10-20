@@ -1,6 +1,6 @@
 [package]
 name = "feeder"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["cezarmathe <cezarmathe@gmail.com>"]
 edition = "2018"
 
