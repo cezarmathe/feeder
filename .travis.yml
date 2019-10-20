@@ -8,6 +8,7 @@ cache: cargo
 
 install:
     - ./ci/install_just.sh
+    - ./ci/install_github_release.sh
 
 jobs:
   include:
