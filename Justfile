@@ -63,7 +63,7 @@ release TAG:
 	git commit -a -m "Bump version numbers to {{TAG}}"
 	git checkout master
 	git merge --no-ff --signoff --commit release-{{TAG}}
-	git tag -s -F changelog/{{TAG}}.txt
+	git tag -s -F changelog/{{TAG}}.txt {{TAG}}
 	git push --follow-tags origin master
 	git checkout develop
 	git merge --no-ff --signoff --commit release-{{TAG}}
