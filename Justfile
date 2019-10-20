@@ -1,6 +1,6 @@
 #!/usr/bin/env just --justfile
 
-GIT_TAG := `git describe --abbrev=0 --tags || true`
+GIT_LATEST_TAG := `git describe --abbrev=0 --tags || true`
 
 test: build check
 	cargo test
@@ -55,19 +55,19 @@ release-preps TAG:
 	git checkout -b release-{{TAG}}
 
 # release task(to be run locally)
-release:
-	@echo "Bumping version numbers to {{GIT_TAG}}"
-	./scripts/bump_cargo_version.sh {{GIT_TAG}}
-	./scripts/bump_release_dockerfile_version.sh {{GIT_TAG}}
+release TAG:
+	@echo "Bumping version numbers to {{TAG}}"
+	./scripts/bump_cargo_version.sh {{TAG}}
+	./scripts/bump_release_dockerfile_version.sh {{TAG}}
 	@echo "Git operations"
-	git commit -a -m "Bump version numbers to {{GIT_TAG}}"
+	git commit -a -m "Bump version numbers to {{TAG}}"
 	git checkout master
-	git merge --no-ff release-{{GIT_TAG}}
-	git tag -s -F changelog/{{GIT_TAG}}.txt
+	git merge --no-ff --signoff --commit release-{{TAG}}
+	git tag -s -F changelog/{{TAG}}.txt
 	git push --follow-tags origin master
 	git checkout develop
-	git merge --no-ff release-{{GIT_TAG}}
-	git branch -D release-{{GIT_TAG}}
+	git merge --no-ff --signoff --commit release-{{TAG}}
+	git branch -D release-{{TAG}}
 
 # release task(to be ran in the CI)
 release-ci: static-binary
