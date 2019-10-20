@@ -1,0 +1,24 @@
+[global]
+port = 8000
+keep_alive = 5
+
+rss_storage_dir = "~/rss"
+
+[global.limits]
+forms = 0
+
+[global.databases]
+feeder = {url = "mongodb://localhost:27017"}
+
+[development]
+address = "localhost"
+log = "debug"
+
+[staging]
+address = "0.0.0.0"
+log = "normal"
+
+[production]
+address = "0.0.0.0"
+log = "critical"
+

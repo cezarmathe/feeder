@@ -1,0 +1,7 @@
+1.0.0 - Initial feeder release
+
+The first release of feeder brings just the basic functionality, as well as a mongodb wrapper(for using mongodb with feeder).
+
+Available features:
+* basic api for feeds and feed items
+* ability to use mongodb as the database
