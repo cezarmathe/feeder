@@ -67,6 +67,7 @@ release TAG:
 	git push --follow-tags origin master
 	git checkout develop
 	git merge --no-ff --signoff --commit release-{{TAG}}
+	git push origin develop
 	git branch -D release-{{TAG}}
 
 # release task(to be ran in the CI)
