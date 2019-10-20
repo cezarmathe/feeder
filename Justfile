@@ -78,7 +78,7 @@ release-ci: static-binary
 	just docker_image_release {{GIT_TAG}}
 
 # login into the github docker package registry
-_docker_preps LOGIN:
+_docker_preps:
 	@docker login docker.pkg.github.com -u ${GITHUB_USERNAME} -p ${GITHUB_TOKEN}
 	cp config/Rocket.toml docker/Rocket.toml
 	cp target/x86_64-unknown-linux-musl/release/feeder docker/feeder
