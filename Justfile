@@ -67,13 +67,14 @@ release TAG:
 	git push --follow-tags origin master
 	git checkout develop
 	git merge --no-ff --signoff --commit release-{{TAG}}
+	git push origin develop
 	git branch -D release-{{TAG}}
 
 # release task(to be ran in the CI)
 release-ci: static-binary
 	@echo "Uploading the binary artifact for tag {{GIT_TAG}}"
 	github-release release --tag {{GIT_TAG}}
-	github-release upload --tag {{GIT_TAG}} --name "feeder" --file target/release/feeder
+	github-release upload --tag {{GIT_TAG}} --name "feeder-{{GIT_TAG}}-x86_64-unknown-linux-musl" --file target/x86_64-unknown-linux-mus/lrelease/feeder
 	@echo "Docker image release for tag {{GIT_TAG}}"
 	just docker_image_release {{GIT_TAG}}
 
