@@ -1,6 +1,6 @@
 #!/usr/bin/env just --justfile
 
-GIT_LATEST_TAG := `git describe --abbrev=0 --tags || true`
+GIT_TAG := `git describe --abbrev=0 --tags || true`
 
 test: build check
 	cargo test
