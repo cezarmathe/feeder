@@ -56,11 +56,12 @@ release-preps TAG:
 
 # release task(to be run locally)
 release TAG:
-	@echo "Bumping version numbers to {{TAG}}"
+	@echo "Bumping version numbers to {{TAG}}, updating Cargo.lock"
 	./scripts/bump_cargo_version.sh {{TAG}}
 	./scripts/bump_release_dockerfile_version.sh {{TAG}}
+	just check
 	@echo "Git operations"
-	git commit -a -m "Bump version numbers to {{TAG}}"
+	git commit -a -m "Bump version numbers to {{TAG}}, update Cargo.lock"
 	git checkout master
 	git merge --no-ff --signoff --commit release-{{TAG}}
 	git tag -s -F changelog/{{TAG}}.txt {{TAG}}
@@ -74,7 +75,7 @@ release TAG:
 release-ci: static-binary
 	@echo "Uploading the binary artifact for tag {{GIT_TAG}}"
 	github-release release --tag {{GIT_TAG}}
-	github-release upload --tag {{GIT_TAG}} --name "feeder-{{GIT_TAG}}-x86_64-unknown-linux-musl" --file target/x86_64-unknown-linux-mus/lrelease/feeder
+	github-release upload --tag {{GIT_TAG}} --name "feeder-{{GIT_TAG}}-x86_64-unknown-linux-musl" --file target/x86_64-unknown-linux-musl/release/feeder
 	@echo "Docker image release for tag {{GIT_TAG}}"
 	just docker_image_release {{GIT_TAG}}
 
