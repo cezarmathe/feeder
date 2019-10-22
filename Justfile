@@ -73,11 +73,11 @@ release TAG:
 
 # release task(to be ran in the CI)
 release-ci: static-binary
+	@echo "Docker image release for tag {{GIT_TAG}}"
+	just docker-image-release
 	@echo "Uploading the binary artifact for tag {{GIT_TAG}}"
 	cat changelog/{{GIT_TAG}}.txt | github-release release --tag {{GIT_TAG}} --description -
 	github-release upload --tag {{GIT_TAG}} --name "feeder-{{GIT_TAG}}-x86_64-unknown-linux-musl" --file target/x86_64-unknown-linux-musl/release/feeder || true
-	@echo "Docker image release for tag {{GIT_TAG}}"
-	just docker-image-release
 
 # login into the github docker package registry
 _docker_preps:
